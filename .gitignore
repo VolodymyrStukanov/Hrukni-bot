@@ -1,0 +1,6 @@
+ConsoleApp1/bin
+ConsoleApp1/obj
+.vs
+
+WebApplication1.csproj.user
+appsettings.Development.json
