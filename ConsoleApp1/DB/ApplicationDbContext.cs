@@ -1,11 +1,5 @@
 ﻿using ConsoleApp1.DB.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleApp1.DB
 {
@@ -13,6 +7,7 @@ namespace ConsoleApp1.DB
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
@@ -26,9 +21,31 @@ namespace ConsoleApp1.DB
                     Token = "6376204287:AAELhYb3664qx-QWbyAUW8oK0psZuVhwT9c"
                 });
             });
+
+            builder.Entity<Member>(entity =>
+            {
+                entity.HasKey(x => new { x.Username, x.ChatId });
+
+                entity.HasOne(x => x.Chat)
+                .WithMany()
+                .HasForeignKey(x => x.ChatId);
+            });
+
+            builder.Entity<Hohol>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+
+                entity.HasOne(x => x.Member)
+                .WithMany()
+                .HasForeignKey(x => new { x.Username, x.ChatId });
+            });
+
         }
 
         public DbSet<Settings> Settings { get; set; }
+        public DbSet<Chat> Chats { get; set; }
+        public DbSet<Hohol> Hohols { get; set; }
+        public DbSet<Member> Members { get; set; }
 
     }
 
