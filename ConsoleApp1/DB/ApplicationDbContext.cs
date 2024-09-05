@@ -1,7 +1,7 @@
-﻿using ConsoleApp1.DB.Models;
+﻿using HrukniHohlinaBot.DB.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConsoleApp1.DB
+namespace HrukniHohlinaBot.DB
 {
     public class ApplicationDbContext : DbContext
     {

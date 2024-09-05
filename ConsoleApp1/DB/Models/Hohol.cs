@@ -1,6 +1,6 @@
 ﻿
 
-namespace ConsoleApp1.DB.Models
+namespace HrukniHohlinaBot.DB.Models
 {
     public class Hohol
     {

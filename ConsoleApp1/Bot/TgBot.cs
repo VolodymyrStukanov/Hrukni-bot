@@ -1,14 +1,14 @@
-﻿using ConsoleApp1.DB;
+﻿using HrukniHohlinaBot.DB;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
-using ConsoleApp1.Services.ChatsServices;
-using ConsoleApp1.Services.HoholServices;
-using ConsoleApp1.Services.MemberServices;
-using ConsoleApp1.Services.SettingsServices;
+using HrukniHohlinaBot.Services.ChatsServices;
+using HrukniHohlinaBot.Services.HoholServices;
+using HrukniHohlinaBot.Services.MemberServices;
+using HrukniHohlinaBot.Services.SettingsServices;
 
-namespace ConsoleApp1.Bot
+namespace HrukniHohlinaBot.Bot
 {
     public class TgBot
     {

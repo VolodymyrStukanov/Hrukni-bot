@@ -1,7 +1,7 @@
-﻿using ConsoleApp1.DB;
-using ConsoleApp1.DB.Models;
+﻿using HrukniHohlinaBot.DB;
+using HrukniHohlinaBot.DB.Models;
 
-namespace ConsoleApp1.Services.SettingsServices
+namespace HrukniHohlinaBot.Services.SettingsServices
 {
     public class SettingsService
     {

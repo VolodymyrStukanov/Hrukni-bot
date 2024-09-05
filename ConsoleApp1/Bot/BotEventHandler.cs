@@ -1,12 +1,12 @@
-﻿using ConsoleApp1.DB.Models;
-using ConsoleApp1.Services.ChatsServices;
-using ConsoleApp1.Services.HoholServices;
-using ConsoleApp1.Services.MemberServices;
+﻿using HrukniHohlinaBot.DB.Models;
+using HrukniHohlinaBot.Services.ChatsServices;
+using HrukniHohlinaBot.Services.HoholServices;
+using HrukniHohlinaBot.Services.MemberServices;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace ConsoleApp1.Bot
+namespace HrukniHohlinaBot.Bot
 {
     public class BotEventHandler
     {

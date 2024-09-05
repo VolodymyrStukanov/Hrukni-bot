@@ -1,8 +1,8 @@
-﻿using ConsoleApp1.DB;
-using ConsoleApp1.DB.Models;
+﻿using HrukniHohlinaBot.DB;
+using HrukniHohlinaBot.DB.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConsoleApp1.Services.ChatsServices
+namespace HrukniHohlinaBot.Services.ChatsServices
 {
     public class ChatsService
     {

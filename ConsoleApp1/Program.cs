@@ -1,8 +1,8 @@
 ﻿
-using ConsoleApp1.Bot;
+using HrukniHohlinaBot.Bot;
 
 
-namespace ConsoleApp1
+namespace HrukniHohlinaBot
 {
     static class Program
     {

@@ -1,8 +1,8 @@
-﻿using ConsoleApp1.DB;
-using ConsoleApp1.DB.Models;
+﻿using HrukniHohlinaBot.DB;
+using HrukniHohlinaBot.DB.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConsoleApp1.Services.HoholServices
+namespace HrukniHohlinaBot.Services.HoholServices
 {
     public class HoholService
     {
