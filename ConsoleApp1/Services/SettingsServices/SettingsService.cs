@@ -1,12 +1,7 @@
 ﻿using ConsoleApp1.DB;
 using ConsoleApp1.DB.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ConsoleApp1.Services
+namespace ConsoleApp1.Services.SettingsServices
 {
     public class SettingsService
     {

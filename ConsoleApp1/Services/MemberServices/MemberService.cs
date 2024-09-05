@@ -1,14 +1,8 @@
 ﻿using ConsoleApp1.DB;
 using ConsoleApp1.DB.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
 
-namespace ConsoleApp1.Services
+namespace ConsoleApp1.Services.MemberServices
 {
     public class MemberService
     {
@@ -28,15 +22,17 @@ namespace ConsoleApp1.Services
 
         public Member? GetMember(long id, long chatId)
         {
-            var member = _context.Members.SingleOrDefault(x => x.Id == id && x.ChatId == chatId);
+            var member = _context.Members
+                .Include(x => x.Chat)
+                .SingleOrDefault(x => x.Id == id && x.ChatId == chatId);
             if (member != null)
                 _context.Entry(member).State = EntityState.Detached;
             return member;
         }
 
-        public void RemoveMember(long id, long chatId)
+        public void RemoveMember(Member member)
         {
-            _context.Members.Remove(new Member() { ChatId = chatId, Id = id });
+            _context.Members.Remove(member);
             _context.SaveChanges();
         }
     }
