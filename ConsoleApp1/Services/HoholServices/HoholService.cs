@@ -36,7 +36,6 @@ namespace ConsoleApp1.Services.HoholServices
             {
                 var hohols = _context.Hohols.Where(x => x.ChatId == chatId).ToArray();
                 var members = _context.Members.Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
-                //Member[] chatMembers = members.ToArray();
 
                 if (members.Length > 0)
                 {
