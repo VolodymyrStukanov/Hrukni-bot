@@ -11,6 +11,9 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using ConsoleApp1.Services;
 using ConsoleApp1.DB.Models;
+using System.Reflection;
+using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace ConsoleApp1.Bot
 {
@@ -22,15 +25,25 @@ namespace ConsoleApp1.Bot
         private HoholService _hoholService;
         private MemberService _memberService;
 
-        static string[] responseMessage = new string[]
+        static string[] claimMessages = new string[]
         {
             "похрюкай",
             "похрюкай хохол",
+            "хохолина хрюкай",
             "хрюкай",
             "давай хрюкай",
             "скажи хрю хрю",
             "хрююююю",
         };
+
+        static string[] allowationMessages = new string[]
+        {
+            @"Хороший хохол. Можеш хрюкать несколько часов, до {0}",
+            @"Умничка. Хрюкаешь до {0}",
+            @"Молодец, можеш розслабиться до {0}",
+            @"До {0} можеш на совей свинячей балакать"
+        };
+
 
         public TgBot(ChatsService chatsService, SettingsService settingsService, HoholService hoholService, MemberService memberService)
         {
@@ -61,75 +74,182 @@ namespace ConsoleApp1.Bot
             cts.Cancel();
         }
 
-        async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        private async Task<Member?> GetMember(Update update)
         {
-            //if (update.Message.Text is null) return;
-            //else
-            //{
-                if (update.Message.Text == "/start")
-                {
-                    _chatsService.AddChat(new DB.Models.Chat()
-                    {
-                        Id = update.Message.Chat.Id,
-                    });
+            long chatId;
+            long memberId;
+            if (update.Type == UpdateType.Message && update.Message != null)
+            {
+                Message? message = update.Message;
+                chatId = message.Chat.Id;
+                memberId = message.From.Id;
+            }
+            else if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
+            {
+                ChatMemberUpdated? myChatMember = update.MyChatMember;
+                chatId = myChatMember.Chat.Id;
+                memberId = myChatMember.From.Id;
+            }
+            else return null;
 
-                    await _client.SendTextMessageAsync(update.Message.Chat.Id, $"Хохлы...");
-                    var hohol = _hoholService.GetActiveHoholByChatId(update.Message.Chat.Id);
-                    if (hohol != null)
-                    {
-                        _hoholService.ResetHoholForChat(update.Message.Chat.Id);
-                        await _client.SendTextMessageAsync(update.Message.Chat.Id, $"Готовтесь хрюкать");
-                    }
-                }
-                else
-                {
-                    var chat = _chatsService.GetChat(update.Message.Chat.Id);
-                    if (chat == null) return;
-
-                    var message = update.Message;
-                    var memberInfo = await _client.GetChatMemberAsync(message.Chat.Id, message.From.Id);
-                    AddNewMember(message.Chat.Id, memberInfo.User.Username);
-
-                    if (update.Type == UpdateType.Message)
-                    {
-                        var hohol = new Hohol()
-                        {
-                            Username = memberInfo.User.Username,
-                            ChatId = message.Chat.Id,
-                        };
-                        if (_hoholService.IsActiveHohol(hohol))
-                        {
-                            if (!hohol.IsAllowedToWrite())
-                            {
-                                await _client.DeleteMessageAsync(
-                                    chatId: hohol.ChatId,
-                                    messageId: update.Message.MessageId
-                                );
-
-                                Random rand = new Random();
-                                int i = rand.Next(0, responseMessage.Length);
-
-                                await _client.SendTextMessageAsync(
-                                    chatId: hohol.ChatId,
-                                    text: $"@{hohol.Username} {responseMessage[i]}",
-                                    cancellationToken: cancellationToken
-                                );
-                            }
-                        }
-                    }
-                }
-            //}
-        }
-
-        private void AddNewMember(long chatId, string username)
-        {
-            if(_memberService.GetMember(username, chatId) != null) return;
+            ChatMember? memberInfo = await _client.GetChatMemberAsync(chatId, memberId);
             Member member = new Member()
             {
+                Username = memberInfo.User.Username,
                 ChatId = chatId,
-                Username = username,
+                Id = memberId,
+                IsOwner = memberInfo.Status == ChatMemberStatus.Creator
             };
+
+            return member;
+        }
+
+        async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            Member? member = await GetMember(update);
+            if (member == null) return;
+
+            if (update.Type == UpdateType.Message 
+                && update.Message != null 
+                && update.Message.Text != null 
+                && update.Message.Text[0] == '/')
+            {
+                await HandleCommand(member, update.Message);
+                return;
+            }
+
+            if (_chatsService.GetChat(member.ChatId) == null) return;
             _memberService.AddMember(member);
+
+
+            if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text == null)
+            {
+                await ChatMemberUpdate(update.Message);
+            }
+            else if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text != null)
+            {
+                await MessageUpdate(update.Message, member);
+            }
+            else if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
+            {
+                await MyChatMemberUpdate(update.MyChatMember, member);
+            }
+        }
+
+        private async Task HandleCommand(Member member, Message message)
+        {
+            if (message.Text[0] != '/') return;
+            if (message.Text == "/start_hrukni" && member.IsOwner)
+            {
+                _chatsService.AddChat(new DB.Models.Chat()
+                {
+                    Id = message.Chat.Id,
+                });
+
+                await _client.SendTextMessageAsync(message.Chat.Id, $"Хохлы...");
+                var hohol = _hoholService.GetActiveHoholByChatId(message.Chat.Id);
+                if (hohol == null)
+                {
+                    _hoholService.ResetHoholForChat(message.Chat.Id);
+                    await _client.SendTextMessageAsync(message.Chat.Id, $"Готовтесь хрюкать");
+                }
+            }
+            else if(message.Text == "/stop_hrukni" && member.IsOwner)
+            {
+                _chatsService.RemoveChatById(message.Chat.Id);
+            }
+            else if(message.Text == "/reset_hohols" && member.IsOwner)
+            {
+                _hoholService.ResetHoholForChat(message.Chat.Id);
+            }
+        }
+
+        private async Task ChatMemberUpdate(Message message)
+        {
+            if (message.NewChatMembers != null)
+            {
+                foreach (var newUser in message.NewChatMembers)
+                {
+                    if (newUser.IsBot) continue;
+
+                    ChatMember? memberInfo = await _client.GetChatMemberAsync(message.Chat.Id, newUser.Id);
+                    Member newMember = new Member()
+                    {
+                        Username = memberInfo.User.Username,
+                        ChatId = message.Chat.Id,
+                        Id = newUser.Id,
+                        IsOwner = memberInfo.Status == ChatMemberStatus.Creator
+                    };
+                    _memberService.AddMember(newMember);
+                }
+            }
+            else if (message.LeftChatMember != null)
+            {
+                _memberService.RemoveMember(message.LeftChatMember.Id, message.Chat.Id);
+            }
+        }
+
+        private async Task MyChatMemberUpdate(ChatMemberUpdated myChatMember, Member member)
+        {
+            if(myChatMember.NewChatMember.Status == ChatMemberStatus.Left ||
+            myChatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
+            {
+                _chatsService.RemoveChatById(myChatMember.Chat.Id);
+            }
+        }
+
+        private async Task MessageUpdate(Message message, Member member)
+        {
+            if (message.Text.ToLower().Contains("хрю"))
+            {
+                var hohol = _hoholService.GetActiveHoholByChatId(message.Chat.Id);
+                if (hohol.IsActive())
+                {
+                    Random random = new Random();
+                    int time = random.Next(2, 6);
+
+                    _hoholService.AllowToWrite(hohol, time);
+
+                    int i = random.Next(0, allowationMessages.Length);
+
+                    var newDate = DateTime.Now.ToLocalTime().AddHours(time).ToString("HH:mm:ss");
+                    await _client.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                        text: String.Format(allowationMessages[i], newDate),
+                        replyParameters: message.MessageId
+                    );
+                }
+            }
+            else
+            {
+                var chat = _chatsService.GetChat(message.Chat.Id);
+                if (chat == null) return;
+
+                var hohol = new Hohol()
+                {
+                    MemberId = message.From.Id,
+                    ChatId = message.Chat.Id,
+                    Member = _memberService.GetMember(message.From.Id, message.Chat.Id)
+                };
+                if (_hoholService.IsActiveHohol(hohol))
+                {
+                    if (!hohol.IsAllowedToWrite())
+                    {
+                        await _client.DeleteMessageAsync(
+                            chatId: hohol.ChatId,
+                            messageId: message.MessageId
+                        );
+
+                        Random rand = new Random();
+                        int i = rand.Next(0, claimMessages.Length);
+
+                        await _client.SendTextMessageAsync(
+                            chatId: hohol.ChatId,
+                            text: $"@{hohol.Member.Username} {claimMessages[i]}"
+                        );
+                    }
+                }
+            }
         }
 
         Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -138,18 +258,6 @@ namespace ConsoleApp1.Bot
             return Task.CompletedTask;
         }
 
-        //private Dictionary<string, Action<Update>> CommandHandlers = new Dictionary<string, Action<Update>>()
-        //{
-        //    { "/start", HandleStart }
-        //};
-
-        //private void HandleStart(Update update)
-        //{
-
-        //}
-
-
-        private TimeOnly updateHoholTime = new TimeOnly(6, 0, 0);
         private Dictionary<string, int> waitingTime = new Dictionary<string, int>()
         {
             { "second", 1000 },
@@ -160,12 +268,9 @@ namespace ConsoleApp1.Bot
         {
             while (true)
             {
-                var time = DateTime.Now;
+                var time = DateTime.Now.ToUniversalTime();
 
-                if (time.Hour == updateHoholTime.Hour)
-                {
-                    _hoholService.ResetHohols();
-                }
+                _hoholService.ResetHohols();
 
                 if (time.Second > 0) Thread.Sleep(waitingTime["second"]);
                 if (time.Minute > 0) Thread.Sleep(waitingTime["minute"]);

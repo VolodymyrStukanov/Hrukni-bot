@@ -24,11 +24,12 @@ namespace ConsoleApp1.DB
 
             builder.Entity<Member>(entity =>
             {
-                entity.HasKey(x => new { x.Username, x.ChatId });
+                entity.HasKey(x => new { x.Id, x.ChatId });
 
                 entity.HasOne(x => x.Chat)
                 .WithMany()
-                .HasForeignKey(x => x.ChatId);
+                .HasForeignKey(x => x.ChatId)
+                .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
             });
 
             builder.Entity<Hohol>(entity =>
@@ -37,9 +38,9 @@ namespace ConsoleApp1.DB
 
                 entity.HasOne(x => x.Member)
                 .WithMany()
-                .HasForeignKey(x => new { x.Username, x.ChatId });
+                .HasForeignKey(x => new { x.MemberId, x.ChatId })
+                .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
             });
-
         }
 
         public DbSet<Settings> Settings { get; set; }
