@@ -184,54 +184,57 @@ namespace HrukniHohlinaBot.Bot
 
         private async Task MessageUpdate(Message message, Member member)
         {
-            if (message.Text.ToLower().Contains("хрю") 
-                && !message.Text.ToLower().Contains("не") 
-                && !message.Text.ToLower().Contains("ні") 
-                && !message.Text.ToLower().Contains("нє"))
+            if (message.Date.CompareTo(DateTime.Now.AddMinutes(-2)) > 0)
             {
-                var hohol = _hoholService.GetActiveHohol(message.Chat.Id);
-                if(hohol.Member.Id == message.From.Id)
+                if (message.Text.ToLower().Contains("хрю")
+                && !message.Text.ToLower().Contains("не")
+                && !message.Text.ToLower().Contains("ні")
+                && !message.Text.ToLower().Contains("нє"))
                 {
-                    if (hohol != null)
+                    var hohol = _hoholService.GetActiveHohol(message.Chat.Id);
+                    if (hohol.Member.Id == message.From.Id)
                     {
-                        Random random = new Random();
-                        int time = random.Next(2, 10);
+                        if (hohol != null)
+                        {
+                            Random random = new Random();
+                            int time = random.Next(2, 10);
 
-                        hohol.EndWritingPeriod = DateTime.Now.ToUniversalTime().AddMinutes(time);
-                        _hoholService.UpdateHohol(hohol);
+                            hohol.EndWritingPeriod = DateTime.Now.ToUniversalTime().AddMinutes(time);
+                            _hoholService.UpdateHohol(hohol);
 
-                        int i = random.Next(0, allowationMessages.Length);
+                            int i = random.Next(0, allowationMessages.Length);
 
-                        var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
+                            var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
+                            await _client.SendTextMessageAsync(
+                            chatId: message.Chat.Id,
+                                text: String.Format(allowationMessages[i], newDate),
+                                replyParameters: message.MessageId
+                            );
+                        }
+                    }
+                }
+                else
+                {
+                    var hohol = _hoholService.GetActiveHohol(message.Chat.Id);
+                    if (hohol == null || hohol.Member.Id != message.From.Id) return;
+
+                    if (!hohol.IsAllowedToWrite())
+                    {
+                        await _client.DeleteMessageAsync(
+                            chatId: hohol.ChatId,
+                            messageId: message.MessageId
+                        );
+
+                        Random rand = new Random();
+                        int i = rand.Next(0, claimMessages.Length);
+
                         await _client.SendTextMessageAsync(
-                        chatId: message.Chat.Id,
-                            text: String.Format(allowationMessages[i], newDate),
-                            replyParameters: message.MessageId
+                            chatId: hohol.ChatId,
+                            text: $"@{hohol.Member.Username} {claimMessages[i]}"
                         );
                     }
                 }
-            }
-            else
-            {
-                var hohol = _hoholService.GetActiveHohol(message.Chat.Id);
-                if (hohol == null || hohol.Member.Id != message.From.Id) return;
-
-                if (!hohol.IsAllowedToWrite())
-                {
-                    await _client.DeleteMessageAsync(
-                        chatId: hohol.ChatId,
-                        messageId: message.MessageId
-                    );
-
-                    Random rand = new Random();
-                    int i = rand.Next(0, claimMessages.Length);
-
-                    await _client.SendTextMessageAsync(
-                        chatId: hohol.ChatId,
-                        text: $"@{hohol.Member.Username} {claimMessages[i]}"
-                    );
-                }
-            }
+            }            
         }
 
         public Task HandleError(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
