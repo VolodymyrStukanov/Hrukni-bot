@@ -7,14 +7,24 @@ using HrukniHohlinaBot.Services.ChatsServices;
 using HrukniHohlinaBot.Services.HoholServices;
 using HrukniHohlinaBot.Services.MemberServices;
 using HrukniHohlinaBot.Services.SettingsServices;
+using Microsoft.Extensions.Configuration;
 
 namespace HrukniHohlinaBot.Bot
 {
     public class TgBot
     {
         private TelegramBotClient _client;
+        private string dbConnection;
 
-        public TgBot() { }
+        public TgBot()
+        {
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false);
+
+            IConfiguration config = builder.Build();
+
+            dbConnection = config.GetConnectionString("DefaultConnection");
+        }
 
         public void Start()
         {
@@ -41,9 +51,8 @@ namespace HrukniHohlinaBot.Bot
 
         private ApplicationDbContext GetApplicationDbContext()
         {
-            string dbConnectString = "Username=postgres;Password=postgres;Host=localhost;Port=5432;Database=HrukniHohlinaBot;";
             var optionBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionBuilder.UseNpgsql(dbConnectString);
+            optionBuilder.UseNpgsql(dbConnection);
 
             return new ApplicationDbContext(optionBuilder.Options);
         }
