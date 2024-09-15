@@ -6,15 +6,15 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace HrukniHohlinaBot.Bot
+namespace HrukniHohlinaBot.Services.BotServices
 {
     public class BotEventHandler
     {
         private ChatsService _chatsService;
         private HoholService _hoholService;
         private MemberService _memberService;
-        private TelegramBotClient _client;
-        public BotEventHandler(TelegramBotClient client, ChatsService chatsService,
+        private ITelegramBotClient _client;
+        public BotEventHandler(ITelegramBotClient client, ChatsService chatsService,
             HoholService hoholService, MemberService memberService)
         {
             _chatsService = chatsService;
@@ -42,7 +42,7 @@ namespace HrukniHohlinaBot.Bot
             @"До {0} можеш на совей свинячей балакать"
         };
 
-        public async Task HandleUpdate(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task HandleUpdate(Update update)
         {
             Member? member = await GetNewMember(update);
             if (member == null) return;
@@ -162,7 +162,7 @@ namespace HrukniHohlinaBot.Bot
             else if (message.LeftChatMember != null)
             {
                 var member = _memberService.GetMember(message.LeftChatMember.Id, message.Chat.Id);
-                if(member != null)
+                if (member != null)
                 {
                     _memberService.RemoveMember(member);
                 }
@@ -184,7 +184,7 @@ namespace HrukniHohlinaBot.Bot
 
         private async Task MessageUpdate(Message message, Member member)
         {
-            if (message.Date.CompareTo(DateTime.Now.AddMinutes(-2)) > 0)
+            if (message.Date.ToLocalTime().CompareTo(DateTime.Now.AddMinutes(-2)) > 0)
             {
                 if (message.Text.ToLower().Contains("хрю")
                 && !message.Text.ToLower().Contains("не")
@@ -207,7 +207,7 @@ namespace HrukniHohlinaBot.Bot
                             var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
                             await _client.SendTextMessageAsync(
                             chatId: message.Chat.Id,
-                                text: String.Format(allowationMessages[i], newDate),
+                                text: string.Format(allowationMessages[i], newDate),
                                 replyParameters: message.MessageId
                             );
                         }
@@ -234,10 +234,10 @@ namespace HrukniHohlinaBot.Bot
                         );
                     }
                 }
-            }            
+            }
         }
 
-        public Task HandleError(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        public Task HandleError(Exception exception)
         {
             Console.WriteLine($"An error occurred: {exception.Message}");
             return Task.CompletedTask;
