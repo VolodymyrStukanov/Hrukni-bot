@@ -3,7 +3,6 @@ using HrukniHohlinaBot.Services.BotServices;
 using HrukniHohlinaBot.Services.ChatsServices;
 using HrukniHohlinaBot.Services.HoholServices;
 using HrukniHohlinaBot.Services.MemberServices;
-using HrukniHohlinaBot.Services.SettingsServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +29,7 @@ namespace HrukniHohlinaBot
                 .ConfigureServices(services =>
                 {
                     services.AddSingleton<ITelegramBotClient>(provider => new TelegramBotClient(
-                        token: "6376204287:AAELhYb3664qx-QWbyAUW8oK0psZuVhwT9c"
+                        token: config.GetSection("BotSettings").GetValue<string>("Token")
                         ));
 
                     services.AddTransient<TelegramBotService>();
@@ -38,7 +37,6 @@ namespace HrukniHohlinaBot
                     services.AddTransient<ChatsService>();
                     services.AddTransient<HoholService>();
                     services.AddTransient<MemberService>();
-                    services.AddTransient<SettingsService>();
 
                     services.AddDbContext<ApplicationDbContext>(options =>
                     {

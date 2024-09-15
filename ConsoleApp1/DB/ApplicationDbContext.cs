@@ -13,15 +13,6 @@ namespace HrukniHohlinaBot.DB
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Settings>(entity =>
-            {
-                entity.HasData(new Settings()
-                {
-                    Id = -1,
-                    Token = "6376204287:AAELhYb3664qx-QWbyAUW8oK0psZuVhwT9c"
-                });
-            });
-
             builder.Entity<Member>(entity =>
             {
                 entity.HasKey(x => new { x.Id, x.ChatId });
@@ -43,7 +34,6 @@ namespace HrukniHohlinaBot.DB
             });
         }
 
-        public DbSet<Settings> Settings { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Hohol> Hohols { get; set; }
         public DbSet<Member> Members { get; set; }
