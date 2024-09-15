@@ -236,12 +236,5 @@ namespace HrukniHohlinaBot.Services.BotServices
                 }
             }
         }
-
-        public Task HandleError(Exception exception)
-        {
-            Console.WriteLine($"An error occurred: {exception.Message}");
-            return Task.CompletedTask;
-        }
-
     }
 }

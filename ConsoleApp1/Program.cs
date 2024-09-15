@@ -17,12 +17,19 @@ namespace HrukniHohlinaBot
     {
         static async Task Main()
         {
+
             var builder = new ConfigurationBuilder(); 
             builder.SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false)
                 .AddEnvironmentVariables();
 
             IConfiguration config = builder.Build();
+
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(config)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
 
             using var cts = new CancellationTokenSource();
             var host = Host.CreateDefaultBuilder()

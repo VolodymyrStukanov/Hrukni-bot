@@ -1,17 +1,20 @@
 ﻿using Telegram.Bot;
 using HrukniHohlinaBot.Services.HoholServices;
+using Microsoft.Extensions.Logging;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {
     public class TelegramBotService
     {
         private ITelegramBotClient _botClient;
+        private readonly ILogger<TelegramBotService> _logger;
         private BotEventHandler _botEventHandler;
         private HoholService _hoholService;
 
-        public TelegramBotService(ITelegramBotClient botClient, BotEventHandler botEventHandler,
-            HoholService hoholService)
+        public TelegramBotService(ITelegramBotClient botClient, ILogger<TelegramBotService> logger,
+            BotEventHandler botEventHandler, HoholService hoholService)
         {
+            _logger = logger;
             _botClient = botClient;
             _botEventHandler = botEventHandler;
             _hoholService = hoholService;
@@ -34,7 +37,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 }
                 catch (Exception ex)
                 {
-                    await _botEventHandler.HandleError(ex);
+                    _logger.LogError($"An error occurred: {ex.Message}");
                 }
             }
         }
@@ -66,7 +69,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 }
                 catch (Exception ex)
                 {
-                    _botEventHandler.HandleError(ex);
+                    _logger.LogError($"An error occurred: {ex.Message}");
                 }
             }
         }
