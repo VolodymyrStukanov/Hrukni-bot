@@ -3,6 +3,7 @@ using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.Services.BotServices;
 using HrukniHohlinaBot.Services.CommonServices;
 using HrukniHohlinaBot.Services.HoholServices;
+using HrukniHohlinaBot.Services.Interfaces;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -42,10 +43,10 @@ namespace HrukniHohlinaBot
                         ));
                     services.AddTransient<TelegramBotService>();
 
-                    services.AddTransient<UnitOfWork>();
-                    services.AddTransient<HoholService>();
-                    services.AddTransient<CommonService<Chat>>();
-                    services.AddTransient<CommonService<Member>>();
+                    services.AddTransient<IUnitOfWork, UnitOfWork>();
+                    services.AddTransient<IHoholService, HoholService>();
+                    services.AddTransient<ICommonService<Chat>, CommonService<Chat>>();
+                    services.AddTransient<ICommonService<Member>, CommonService<Member>>();
 
                     services.AddDbContext<ApplicationDbContext>(options =>
                     {

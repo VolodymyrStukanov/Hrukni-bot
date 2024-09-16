@@ -1,11 +1,11 @@
 ﻿namespace HrukniHohlinaBot.Services.Interfaces
 {
-    internal interface IEntitiesService<T>
+    public interface ICommonService<T>
     {
         public T Create(T model);
         public void Update(T model);
         public void Remove(T model);
-        public void Remove(object[] key);
-        public T? Get(object[] key);
+        public void Remove(params object[] key);
+        public T? Get(params object[] key);
     }
 }

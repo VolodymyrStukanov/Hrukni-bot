@@ -1,6 +1,5 @@
 ﻿using HrukniHohlinaBot.DB;
 using HrukniHohlinaBot.DB.Models;
-using HrukniHohlinaBot.Services.CommonServices;
 using HrukniHohlinaBot.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,22 +9,22 @@ namespace HrukniHohlinaBot.Services.UnitOfWork
     {
         ApplicationDbContext _context;
         public UnitOfWork(ApplicationDbContext context,
-            CommonService<Chat> chatService, CommonService<Member> memberService)
+            ICommonService<Chat> chatService, ICommonService<Member> memberService)
         {
             _context = context;
             ChatService = chatService;
             MemberService = memberService;
         }
 
-        private CommonService<Chat> _chatService;
-        public CommonService<Chat> ChatService
+        private ICommonService<Chat> _chatService;
+        public ICommonService<Chat> ChatService
         {
             get { return _chatService; }
             private set { _chatService ??= value; }
         }
 
-        private CommonService<Member> _memberService;
-        public CommonService<Member> MemberService
+        private ICommonService<Member> _memberService;
+        public ICommonService<Member> MemberService
         {
             get { return _memberService; }
             private set { _memberService ??= value; }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HrukniHohlinaBot.Services.CommonServices
 {
-    public class CommonService<T> : IEntitiesService<T> where T : class, IModel
+    public class CommonService<T> : ICommonService<T> where T : class, IModel
     {
         private readonly DbSet<T> _dbSet;
 
@@ -43,6 +43,5 @@ namespace HrukniHohlinaBot.Services.CommonServices
         {
             _dbSet.Remove(entity);
         }
-
     }
 }

@@ -1,7 +1,13 @@
-﻿namespace HrukniHohlinaBot.Services.Interfaces
+﻿using HrukniHohlinaBot.DB.Models;
+
+namespace HrukniHohlinaBot.Services.Interfaces
 {
-    internal interface IUnitOfWork
+    public interface IUnitOfWork
     {
+        public ICommonService<Chat> ChatService { get; }
+
+        public ICommonService<Member> MemberService { get; }
+
         public void Commit();
         public void Dispose();
         public void DetachAll();

@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace HrukniHohlinaBot.Services.Interfaces
 {
-    internal interface IHoholService
+    public interface IHoholService
     {
         public void ResetHohols();
         public void ResetHoholForChat(long chatId);
         public Hohol? GetActiveHohol(long chatId);
         public void UpdateHohol(Hohol hohol);
+        //public abstract void AddHohol(Hohol hohol);
     }
 }

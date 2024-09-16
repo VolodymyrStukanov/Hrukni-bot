@@ -1,21 +1,21 @@
 ﻿using Telegram.Bot;
-using HrukniHohlinaBot.Services.HoholServices;
 using Microsoft.Extensions.Logging;
 using HrukniHohlinaBot.DB.Models;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
+using HrukniHohlinaBot.Services.Interfaces;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {
-    public class TelegramBotService
+    public class TelegramBotService : ITelegramBotService
     {
         private ITelegramBotClient _botClient;
         private readonly ILogger<TelegramBotService> _logger;
-        private HoholService _hoholService;
-        private UnitOfWork.UnitOfWork _unitOfWork;
+        private IHoholService _hoholService;
+        private IUnitOfWork _unitOfWork;
 
         public TelegramBotService(ITelegramBotClient botClient, ILogger<TelegramBotService> logger,
-            HoholService hoholService, UnitOfWork.UnitOfWork unitOfWork)
+            IHoholService hoholService, IUnitOfWork unitOfWork)
         {
             _logger = logger;
             _botClient = botClient;
@@ -56,6 +56,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             "давай хрюкай",
             "скажи хрю хрю",
             "хрююююю",
+            "ги ги га га",
         };
 
         static string[] allowationMessages = new string[]
