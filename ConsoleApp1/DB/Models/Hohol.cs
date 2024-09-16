@@ -6,10 +6,10 @@ namespace HrukniHohlinaBot.DB.Models
 {
     public class Hohol : IModel
     {
-        public int Id { get; set; }
         public long MemberId { get; set; }
-        public long ChatId { get; set; }
         public Member Member { get; set; }
+        public long ChatId { get; set; }
+        public Chat Chat { get; set; }
         public DateTime AssignmentDate { get; set; }
         public DateTime EndWritingPeriod { get; set; }
 
@@ -17,7 +17,7 @@ namespace HrukniHohlinaBot.DB.Models
         {
             return new object[]
             {
-                Id
+                MemberId
             };
         }
 

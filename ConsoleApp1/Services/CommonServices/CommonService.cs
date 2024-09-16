@@ -43,5 +43,10 @@ namespace HrukniHohlinaBot.Services.CommonServices
         {
             _dbSet.Remove(entity);
         }
+
+        public IQueryable<T> GetAll()
+        {
+            return _dbSet;
+        }
     }
 }

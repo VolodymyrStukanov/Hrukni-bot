@@ -8,12 +8,13 @@ namespace HrukniHohlinaBot.Services.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         ApplicationDbContext _context;
-        public UnitOfWork(ApplicationDbContext context,
-            ICommonService<Chat> chatService, ICommonService<Member> memberService)
+        public UnitOfWork(ApplicationDbContext context, ICommonService<Chat> chatService, 
+            ICommonService<Member> memberService, ICommonService<Hohol> hoholService)
         {
             _context = context;
             ChatService = chatService;
             MemberService = memberService;
+            HoholService = hoholService;
         }
 
         private ICommonService<Chat> _chatService;
@@ -28,6 +29,13 @@ namespace HrukniHohlinaBot.Services.UnitOfWork
         {
             get { return _memberService; }
             private set { _memberService ??= value; }
+        }
+
+        private ICommonService<Hohol> _hoholService;
+        public ICommonService<Hohol> HoholService
+        {
+            get { return _hoholService; }
+            private set { _hoholService ??= value; }
         }
 
         public void Dispose()

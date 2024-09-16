@@ -25,11 +25,16 @@ namespace HrukniHohlinaBot.DB
 
             builder.Entity<Hohol>(entity =>
             {
-                entity.HasKey(x => x.Id);
+                entity.HasKey(x => x.ChatId);
 
                 entity.HasOne(x => x.Member)
                 .WithMany()
                 .HasForeignKey(x => new { x.MemberId, x.ChatId })
+                .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Chat)
+                .WithMany()
+                .HasForeignKey(x => x.ChatId)
                 .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
             });
         }

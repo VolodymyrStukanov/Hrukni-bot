@@ -7,5 +7,6 @@
         public void Remove(T model);
         public void Remove(params object[] key);
         public T? Get(params object[] key);
+        public IQueryable<T> GetAll();
     }
 }
