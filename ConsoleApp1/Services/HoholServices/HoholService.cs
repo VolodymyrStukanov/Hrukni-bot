@@ -1,18 +1,22 @@
 ﻿using HrukniHohlinaBot.DB;
 using HrukniHohlinaBot.DB.Models;
+using HrukniHohlinaBot.Services.BotServices;
+using HrukniHohlinaBot.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HrukniHohlinaBot.Services.HoholServices
 {
-    public class HoholService
+    public class HoholService : IHoholService
     {
         object LockObject = new object();
-        object ResetHoholLockObject = new object();
 
         ApplicationDbContext _context;
-        public HoholService(ApplicationDbContext context)
+        private readonly ILogger<TelegramBotService> _logger;
+        public HoholService(ApplicationDbContext context, ILogger<TelegramBotService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public Hohol? GetActiveHohol(long chatId)
@@ -32,7 +36,7 @@ namespace HrukniHohlinaBot.Services.HoholServices
 
         public void ResetHoholForChat(long chatId)
         {
-            lock (ResetHoholLockObject)
+            lock (LockObject)
             {
                 var hohols = _context.Hohols.Where(x => x.ChatId == chatId).ToArray();
                 var members = _context.Members.Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();

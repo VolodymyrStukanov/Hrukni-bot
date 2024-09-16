@@ -1,8 +1,9 @@
 ﻿using HrukniHohlinaBot.DB;
+using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.Services.BotServices;
-using HrukniHohlinaBot.Services.ChatsServices;
+using HrukniHohlinaBot.Services.CommonServices;
 using HrukniHohlinaBot.Services.HoholServices;
-using HrukniHohlinaBot.Services.MemberServices;
+using HrukniHohlinaBot.Services.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,7 @@ namespace HrukniHohlinaBot
                 .ReadFrom.Configuration(config)
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
+                .WriteTo.File("logs/error/log-.txt", rollingInterval: RollingInterval.Day/*, restrictedToMinimumLevel: LogEventLevel.Warning*/)
                 .CreateLogger();
 
             using var cts = new CancellationTokenSource();
@@ -38,12 +40,12 @@ namespace HrukniHohlinaBot
                     services.AddSingleton<ITelegramBotClient>(provider => new TelegramBotClient(
                         token: config.GetSection("BotSettings").GetValue<string>("Token")
                         ));
-
                     services.AddTransient<TelegramBotService>();
-                    services.AddTransient<BotEventHandler>();
-                    services.AddTransient<ChatsService>();
+
+                    services.AddTransient<UnitOfWork>();
                     services.AddTransient<HoholService>();
-                    services.AddTransient<MemberService>();
+                    services.AddTransient<CommonService<Chat>>();
+                    services.AddTransient<CommonService<Member>>();
 
                     services.AddDbContext<ApplicationDbContext>(options =>
                     {

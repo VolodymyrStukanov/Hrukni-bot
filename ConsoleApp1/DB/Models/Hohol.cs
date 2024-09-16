@@ -1,8 +1,10 @@
 ﻿
 
+using HrukniHohlinaBot.DB.Interfaces;
+
 namespace HrukniHohlinaBot.DB.Models
 {
-    public class Hohol
+    public class Hohol : IModel
     {
         public int Id { get; set; }
         public long MemberId { get; set; }
@@ -10,6 +12,14 @@ namespace HrukniHohlinaBot.DB.Models
         public Member Member { get; set; }
         public DateTime AssignmentDate { get; set; }
         public DateTime EndWritingPeriod { get; set; }
+
+        public object[] GetKey()
+        {
+            return new object[]
+            {
+                Id
+            };
+        }
 
         public bool IsActive()
         {
