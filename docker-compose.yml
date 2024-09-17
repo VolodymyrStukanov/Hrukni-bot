@@ -8,13 +8,8 @@ services:
       context: .
       dockerfile: ConsoleApp1/Dockerfile
     environment:
-      # - ConnectionStrings__DefaultConnection=User ID=postgres;Password=postgres;Server=hrukni_database;Port=5432;Database=HrukniHohlinaBotDB; IntegratedSecurity=true;Pooling=true;
-      # - ConnectionStrings__DefaultConnection=Username=postgres;Password=postgres;Server=hrukni_database;Port=5432;Database=HrukniHohlinaBotDB;Pooling=true;
-      # - ConnectionStrings__DefaultConnection=Username=postgres;Password=postgres;Host=localhost;Port=5432;Database=HrukniHohlinaBotDB;Pooling=true;
+      - TZ=Europe/Kyiv
       - ConnectionStrings__DefaultConnection=Username=postgres;Password=postgres;Host=hrukni_database;Port=5432;Database=HrukniHohlinaBotDB;Pooling=true;
-    # ports:
-    #   - "5000:5000"
-    #   - "5001:5001"
     depends_on:
       - hrukni_database
     networks:
@@ -29,9 +24,6 @@ services:
         - POSTGRES_PASSWORD=postgres
     volumes:
         - app_data:/var/lib/postgresql/data
-        # - app_data:/var/lib/backup/data
-        # - ./.containers/hrukni_database:/var/lib/postgresql/data
-        # - ./.containers/hrukni_database:/var/lib/backup/data
     ports: 
         - 5432:5432
     networks:
