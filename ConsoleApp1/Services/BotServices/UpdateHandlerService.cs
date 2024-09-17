@@ -185,7 +185,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 && !message.Text.ToLower().Contains("ні")
                 && !message.Text.ToLower().Contains("нє"))
                 {
-                    var hohol = _unitOfWork.HoholService.Get(message.Chat.Id);
+                    var hohol = _unitOfWork.HoholService.GetIncludingChilds(message.Chat.Id);
                     if (hohol.Member.Id == message.From.Id)
                     {
                         if (hohol != null)
@@ -210,7 +210,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 }
                 else
                 {
-                    var hohol = _unitOfWork.HoholService.Get(message.Chat.Id);
+                    var hohol = _unitOfWork.HoholService.GetIncludingChilds(message.Chat.Id);
                     if (hohol == null || hohol.Member.Id != message.From.Id) return;
 
                     if (!hohol.IsAllowedToWrite())

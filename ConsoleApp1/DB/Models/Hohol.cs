@@ -4,7 +4,7 @@ using HrukniHohlinaBot.DB.Interfaces;
 
 namespace HrukniHohlinaBot.DB.Models
 {
-    public class Hohol : IModel
+    public class Hohol : IDataTableModel
     {
         public long MemberId { get; set; }
         public Member Member { get; set; }

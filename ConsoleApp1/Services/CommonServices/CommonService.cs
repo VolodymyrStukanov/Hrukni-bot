@@ -5,13 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HrukniHohlinaBot.Services.CommonServices
 {
-    public class CommonService<T> : ICommonService<T> where T : class, IModel
+    public class CommonService<T> : ICommonService<T> where T : class, IDataTableModel
     {
         private readonly DbSet<T> _dbSet;
+        private readonly ApplicationDbContext _context;
 
         public CommonService(ApplicationDbContext context)
         {
             _dbSet = context.Set<T>();
+            _context = context;
         }
 
         public T Create(T model)
@@ -23,6 +25,21 @@ namespace HrukniHohlinaBot.Services.CommonServices
         public void Update(T model)
         {
             _dbSet.Update(model);
+        }
+
+        public T? GetIncludingChilds(params object[] key)
+        {
+            var entity = _dbSet.Find(key);
+            if (entity != null)
+            {
+                var entry = _context.Entry(entity);
+                foreach (var navigation in entry.Navigations)
+                {
+                    navigation.Load();
+                }
+                _dbSet.Entry(entity).State = EntityState.Detached;
+            }
+            return entity;
         }
 
         public T? Get(params object[] key)

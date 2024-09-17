@@ -1,6 +1,9 @@
 ConsoleApp1/bin
 ConsoleApp1/obj
 .vs
+bin/
+obj/
+ConsoleApp1/logs/
 
 WebApplication1.csproj.user
 appsettings.Development.json

@@ -1,5 +1,6 @@
 ﻿using HrukniHohlinaBot.DB.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace HrukniHohlinaBot.DB
 {
@@ -42,6 +43,18 @@ namespace HrukniHohlinaBot.DB
         public DbSet<Chat> Chats { get; set; }
         public DbSet<Hohol> Hohols { get; set; }
         public DbSet<Member> Members { get; set; }
+
+
+        public IEnumerable<IForeignKey> GetForeignKeys<T>() where T : class
+        {
+            var entityType = this.Model.FindEntityType(typeof(T));
+            return entityType?.GetForeignKeys();
+        }
+        public IKey GetPrimaryKey<T>() where T : class
+        {
+            var entityType = this.Model.FindEntityType(typeof(T));
+            return entityType?.FindPrimaryKey();
+        }
 
     }
 

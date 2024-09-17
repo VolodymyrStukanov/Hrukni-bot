@@ -1,8 +1,7 @@
-﻿using System;
-
+﻿
 namespace HrukniHohlinaBot.DB.Interfaces
 {
-    public interface IModel
+    public interface IDataTableModel
     {
         public object[] GetKey();
     }
