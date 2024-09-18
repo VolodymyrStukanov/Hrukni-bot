@@ -60,7 +60,7 @@ namespace HrukniHohlinaBot.Services.BotServices
 
             if (_unitOfWork.MemberService.Get(member.Id, member.ChatId) == null)
             {
-                _unitOfWork.MemberService.Create(member);
+                _unitOfWork.MemberService.Add(member);
                 _unitOfWork.Commit();
                 return;
             }
@@ -117,7 +117,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 var chat = _unitOfWork.ChatService.Get(message.Chat.Id);
                 if (chat == null)
                 {
-                    _unitOfWork.ChatService.Create(new DB.Models.Chat()
+                    _unitOfWork.ChatService.Add(new DB.Models.Chat()
                     {
                         Id = message.Chat.Id,
                     });
@@ -155,7 +155,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                         Id = newUser.Id,
                         IsOwner = memberInfo.Status == ChatMemberStatus.Creator
                     };
-                    _unitOfWork.MemberService.Create(newMember);
+                    _unitOfWork.MemberService.Add(newMember);
                     _unitOfWork.Commit();
                 }
             }

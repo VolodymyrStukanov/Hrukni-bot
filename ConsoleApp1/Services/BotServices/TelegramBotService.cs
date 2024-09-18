@@ -45,7 +45,7 @@ namespace HrukniHohlinaBot.Services.BotServices
         }
 
 
-        private TimeOnly resetHoholsTime = new TimeOnly(1, 6, 0);
+        private TimeOnly resetHoholsTime = new TimeOnly(6, 0, 0);
         private Dictionary<string, int> waitingTime = new Dictionary<string, int>()
         {
             { "second", 1000 },
@@ -61,8 +61,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                     var time = DateTime.Now;
 
                     if (time.Hour == resetHoholsTime.Hour
-                        && time.Minute == 0
-                        && time.Second == 0)
+                        && time.Minute == 0)
                     {
                         _hoholService.ResetHohols();
                         _unitOfWork.Commit();

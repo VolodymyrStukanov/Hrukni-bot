@@ -16,7 +16,7 @@ namespace HrukniHohlinaBot.Services.CommonServices
             _context = context;
         }
 
-        public T Create(T model)
+        public T Add(T model)
         {
             _dbSet.Add(model);
             return model;
@@ -59,6 +59,11 @@ namespace HrukniHohlinaBot.Services.CommonServices
         public void Remove(T entity)
         {
             _dbSet.Remove(entity);
+        }
+
+        public void RemoveRange(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
         }
 
         public IQueryable<T> GetAll()

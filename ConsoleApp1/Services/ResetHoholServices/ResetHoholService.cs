@@ -10,13 +10,10 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
     {
         object LockObject = new object();
 
-        private ApplicationDbContext _context;
         private readonly ILogger<TelegramBotService> _logger;
         private IUnitOfWork _unitOfWork;
-        public ResetHoholService(ApplicationDbContext context, ILogger<TelegramBotService> logger,
-            IUnitOfWork unitOfWork)
+        public ResetHoholService(ILogger<TelegramBotService> logger, IUnitOfWork unitOfWork)
         {
-            _context = context;
             _logger = logger;
             _unitOfWork = unitOfWork;
         }
@@ -33,10 +30,10 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
                     Random rand = new Random();
                     var i = rand.Next(0, members.Length);
 
-                    var currentHohol = hohols.SingleOrDefault(x => x.IsActive());
-                    if (currentHohol != null)
+                    var currentHohols = hohols.Where(x => x.IsActive() || x.ChatId == chatId);
+                    if (currentHohols.Count() != 0)
                     {
-                        _unitOfWork.HoholService.Remove(currentHohol);
+                        _unitOfWork.HoholService.RemoveRange(currentHohols);
                         _unitOfWork.Commit();
                     }
 
@@ -47,7 +44,7 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
                         AssignmentDate = DateTime.Now.ToUniversalTime(),
                         EndWritingPeriod = DateTime.Now.ToUniversalTime(),
                     };
-                    _unitOfWork.HoholService.Create(hohol);
+                    _unitOfWork.HoholService.Add(hohol);
                     _unitOfWork.Commit();
                 }
             }
@@ -57,7 +54,7 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
         {
             lock (LockObject)
             {
-                var chats = _context.Chats.ToList();
+                var chats = _unitOfWork.ChatService.GetAll().ToList();
                 foreach (var chat in chats)
                 {
                     ResetHoholForChat(chat.Id);
