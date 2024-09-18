@@ -9,16 +9,14 @@ namespace HrukniHohlinaBot.Services.BotServices
         private ITelegramBotClient _botClient;
         private readonly ILogger<TelegramBotService> _logger;
         private IResetHoholService _hoholService;
-        private IUnitOfWork _unitOfWork;
         private IUpdateHandlerService _updateHandlerService;
 
         public TelegramBotService(ITelegramBotClient botClient, ILogger<TelegramBotService> logger,
-            IResetHoholService hoholService, IUnitOfWork unitOfWork, IUpdateHandlerService updateHandlerService)
+            IResetHoholService hoholService, IUpdateHandlerService updateHandlerService)
         {
             _logger = logger;
             _botClient = botClient;
             _hoholService = hoholService;
-            _unitOfWork = unitOfWork;
             _updateHandlerService = updateHandlerService;
         }
 
@@ -64,7 +62,6 @@ namespace HrukniHohlinaBot.Services.BotServices
                         && time.Minute == 0)
                     {
                         _hoholService.ResetHohols();
-                        _unitOfWork.Commit();
                     }
 
                     if (time.Second > 0) Thread.Sleep(waitingTime["second"]);
