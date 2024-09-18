@@ -1,18 +1,9 @@
 ﻿
 
-using HrukniHohlinaBot.DB.Interfaces;
-
 namespace HrukniHohlinaBot.DB.Models
 {
-    public class Chat : IDataTableModel
+    public class Chat
     {
         public long Id { get; set; }
-        public object[] GetKey()
-        {
-            return new object[]
-            {
-                Id
-            };
-        }
     }
 }

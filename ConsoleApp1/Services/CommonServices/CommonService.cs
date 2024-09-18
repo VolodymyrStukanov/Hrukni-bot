@@ -1,11 +1,10 @@
 ﻿using HrukniHohlinaBot.DB;
-using HrukniHohlinaBot.DB.Interfaces;
 using HrukniHohlinaBot.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace HrukniHohlinaBot.Services.CommonServices
 {
-    public class CommonService<T> : ICommonService<T> where T : class, IDataTableModel
+    public class CommonService<T> : ICommonService<T> where T : class
     {
         private readonly DbSet<T> _dbSet;
         private readonly ApplicationDbContext _context;

@@ -69,7 +69,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             {
                 await ChatMemberUpdate(update.Message);
             }
-            else if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text != null)
+            else if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text != null && update.Message.From != null)
             {
                 await MessageUpdate(update.Message, member);
             }
@@ -83,7 +83,7 @@ namespace HrukniHohlinaBot.Services.BotServices
         {
             long chatId;
             long memberId;
-            if (update.Type == UpdateType.Message && update.Message != null)
+            if (update.Type == UpdateType.Message && update.Message != null && update.Message.From != null)
             {
                 Message? message = update.Message;
                 chatId = message.Chat.Id;
