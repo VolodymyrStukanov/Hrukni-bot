@@ -31,6 +31,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             "скажи хрю хрю",
             "хрююююю",
             "ги ги га га",
+            "ты в муте клоун",
         };
 
         static string[] allowationMessages = new string[]
