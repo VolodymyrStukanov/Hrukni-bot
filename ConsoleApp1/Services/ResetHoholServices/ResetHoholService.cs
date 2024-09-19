@@ -1,5 +1,4 @@
-﻿using HrukniHohlinaBot.DB;
-using HrukniHohlinaBot.DB.Models;
+﻿using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.Services.BotServices;
 using HrukniHohlinaBot.Services.Interfaces;
 using Microsoft.Extensions.Logging;

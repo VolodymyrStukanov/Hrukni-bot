@@ -25,7 +25,7 @@ services:
     volumes:
         - app_data:/var/lib/postgresql/data
     ports: 
-        - 5432:5432
+        - 54321:5432
     networks:
       - hrukni_network
       

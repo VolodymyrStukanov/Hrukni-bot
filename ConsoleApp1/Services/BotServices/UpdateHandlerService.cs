@@ -32,6 +32,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             "хрююююю",
             "ги ги га га",
             "ты в муте клоун",
+            "бам бам бам бам мы стреляем по хохлам",
         };
 
         static string[] allowationMessages = new string[]
@@ -39,7 +40,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             @"Хороший хохол, Можеш хрюкать до {0}",
             @"Умничка, Хрюкаешь до {0}",
             @"Молодец, можеш розслабиться до {0}",
-            @"До {0} можеш на совей свинячей балакать"
+            @"До {0} можеш на своей свинячей балакать"
         };
 
         public async Task HandleUpdate(Update update, ITelegramBotClient botClient)
