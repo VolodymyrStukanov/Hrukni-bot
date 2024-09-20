@@ -35,38 +35,47 @@ namespace HrukniHohlinaBot.Services.BotServices
 
         public async Task HandleUpdate(Update update)
         {
-            Member? member = await GetNewMember(update);
-            if (member == null) return;
-
-            if (update.Type == UpdateType.Message
-                && update.Message != null
-                && update.Message.Text != null
-                && update.Message.Text[0] == '/')
+            try
             {
-                await HandleCommand(member, update.Message);
-                return;
-            }
+                Member? member = await GetNewMember(update);
+                if (member == null) return;
 
-            if (_unitOfWork.ChatService.Get(member.ChatId) == null) return;
-
-            if (_unitOfWork.MemberService.Get(member.Id, member.ChatId) == null)
-            {
-                _unitOfWork.MemberService.Add(member);
+                var existingMember = _unitOfWork.MemberService.Get(member.Id, member.ChatId);
+                if (existingMember == null)
+                {
+                    _unitOfWork.MemberService.Add(member);
+                    _unitOfWork.Commit();
+                    return;
+                }
+                existingMember.Username = member.Username;
+                existingMember.IsOwner = member.IsOwner;
+                _unitOfWork.MemberService.Update(existingMember);
                 _unitOfWork.Commit();
-                return;
-            }
 
-            if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text == null)
-            {
-                await ChatMemberUpdate(update.Message);
+                if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text == null)
+                {
+                    await ChatMemberUpdate(update.Message);
+                }
+                else if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text != null && update.Message.From != null)
+                {
+                    if (update.Type == UpdateType.Message
+                    && update.Message != null
+                    && update.Message.Text != null
+                    && update.Message.Text[0] == '/')
+                    {
+                        await HandleCommand(member, update.Message);
+                        return;
+                    }
+                    else await MessageUpdate(update.Message, member);
+                }
+                else if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
+                {
+                    await MyChatMemberUpdate(update.MyChatMember, member);
+                }
             }
-            else if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text != null && update.Message.From != null)
+            catch(Exception ex)
             {
-                await MessageUpdate(update.Message, member);
-            }
-            else if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
-            {
-                await MyChatMemberUpdate(update.MyChatMember, member);
+                _logger.LogError($"An error occurred: {ex.Message}");
             }
         }
 
@@ -102,25 +111,20 @@ namespace HrukniHohlinaBot.Services.BotServices
 
         private async Task HandleCommand(Member member, Message message)
         {
-            if (message.Text[0] != '/') return;
+            var chat = _unitOfWork.ChatService.Get(member.ChatId);
             if (message.Text == "/start_hrukni" && member.IsOwner)
             {
-                var chat = _unitOfWork.ChatService.Get(message.Chat.Id);
-                if (chat == null)
-                {
-                    _unitOfWork.ChatService.Add(new DB.Models.Chat()
-                    {
-                        Id = message.Chat.Id,
-                    });
-                    _unitOfWork.Commit();
-                }
+                chat.IsActive = true;
+                _unitOfWork.ChatService.Update(chat);
+                _unitOfWork.Commit();
 
                 await _botClient.SendTextMessageAsync(message.Chat.Id, $"Хохлы...");
                 await _botClient.SendTextMessageAsync(message.Chat.Id, $"Готовтесь хрюкать");
             }
             else if (message.Text == "/stop_hrukni" && member.IsOwner)
             {
-                _unitOfWork.ChatService.Remove(message.Chat.Id);
+                chat.IsActive = false;
+                _unitOfWork.ChatService.Update(chat);
                 _unitOfWork.Commit();
             }
             else if (message.Text == "/reset_hohols" && member.IsOwner)
@@ -163,6 +167,15 @@ namespace HrukniHohlinaBot.Services.BotServices
             myChatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
             {
                 _unitOfWork.ChatService.Remove(myChatMember.Chat.Id);
+                _unitOfWork.Commit();
+            }
+            else if (myChatMember.NewChatMember.Status == ChatMemberStatus.Member)
+            {
+                _unitOfWork.ChatService.Add(new DB.Models.Chat()
+                {
+                    Id = member.ChatId,
+                    IsActive = false,
+                });
                 _unitOfWork.Commit();
             }
         }
