@@ -75,7 +75,8 @@ namespace HrukniHohlinaBot.Services.BotServices
             }
             catch(Exception ex)
             {
-                _logger.LogError($"An error occurred: {ex.Message}");
+                _logger.LogError($"An error occurred in HandleUpdate method: {ex.Message}");
+                _unitOfWork.Dispose();
             }
         }
 

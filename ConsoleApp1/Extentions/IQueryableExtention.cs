@@ -13,8 +13,8 @@ namespace HrukniHohlinaBot.Extentions
             {
                 query = query.Include(property.Name);
             }
+            query.AsSplitQuery();
             return query;
-
         }
     }
 }

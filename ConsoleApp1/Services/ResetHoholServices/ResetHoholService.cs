@@ -21,31 +21,39 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
         {
             lock (LockObject)
             {
-                var hohols = _unitOfWork.HoholService.GetAll().Where(x => x.ChatId == chatId).ToArray();
-                var members = _unitOfWork.MemberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
-
-                if (members.Length > 0)
+                try
                 {
-                    Random rand = new Random();
-                    var i = rand.Next(0, members.Length);
+                    var hohols = _unitOfWork.HoholService.GetAll().Where(x => x.ChatId == chatId).ToArray();
+                    var members = _unitOfWork.MemberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
 
-                    var currentHohols = hohols.Where(x => x.IsActive() || x.ChatId == chatId);
-                    if (currentHohols.Count() != 0)
+                    if (members.Length > 0)
                     {
-                        _unitOfWork.HoholService.RemoveRange(currentHohols);
+                        Random rand = new Random();
+                        var i = rand.Next(0, members.Length);
+
+                        var currentHohols = hohols.Where(x => x.IsActive() || x.ChatId == chatId);
+                        if (currentHohols.Count() != 0)
+                        {
+                            _unitOfWork.HoholService.RemoveRange(currentHohols);
+                            _unitOfWork.Commit();
+                        }
+
+                        var hohol = new Hohol()
+                        {
+                            ChatId = chatId,
+                            MemberId = members[i].Id,
+                            AssignmentDate = DateTime.Now.ToUniversalTime(),
+                            EndWritingPeriod = DateTime.Now.ToUniversalTime(),
+                        };
+                        _unitOfWork.HoholService.Add(hohol);
                         _unitOfWork.Commit();
                     }
-
-                    var hohol = new Hohol()
-                    {
-                        ChatId = chatId,
-                        MemberId = members[i].Id,
-                        AssignmentDate = DateTime.Now.ToUniversalTime(),
-                        EndWritingPeriod = DateTime.Now.ToUniversalTime(),
-                    };
-                    _unitOfWork.HoholService.Add(hohol);
-                    _unitOfWork.Commit();
                 }
+                catch(Exception ex)
+                {
+                    _logger.LogError($"An error occurred in ResetHoholForChat method: {ex.Message}\nThe ChatId = {chatId}");
+                    _unitOfWork.Dispose();
+                }                
             }
         }
 
