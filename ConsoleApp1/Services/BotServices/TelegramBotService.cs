@@ -46,7 +46,7 @@ namespace HrukniHohlinaBot.Services.BotServices
         private TimeOnly resetHoholsTime = new TimeOnly(6, 0, 0);
         private Dictionary<string, int> waitingTime = new Dictionary<string, int>()
         {
-            { "second", 1000 },
+            { "tenSeconds", 10000 },
             { "minute", 60000 },
             { "hour", 3600000 }
         };
@@ -59,14 +59,18 @@ namespace HrukniHohlinaBot.Services.BotServices
                     var time = DateTime.Now;
 
                     if (time.Hour == resetHoholsTime.Hour
-                        && time.Minute == 0)
+                        && time.Minute == resetHoholsTime.Minute)
                     {
                         _hoholService.ResetHohols();
+                        Thread.Sleep(waitingTime["hour"]);
                     }
 
-                    if (time.Second > 0) Thread.Sleep(waitingTime["second"]);
-                    if (time.Minute > 0) Thread.Sleep(waitingTime["minute"]);
-                    else Thread.Sleep(waitingTime["hour"]);
+                    if (time.Hour != resetHoholsTime.Hour - 1) 
+                        Thread.Sleep(waitingTime["hour"]);
+                    else if (time.Minute != (resetHoholsTime.Minute == 0 ? 60 - 1 : resetHoholsTime.Minute - 1)) 
+                        Thread.Sleep(waitingTime["minute"]);
+                    else 
+                        Thread.Sleep(waitingTime["tenSeconds"]);
                 }
                 catch (Exception ex)
                 {
