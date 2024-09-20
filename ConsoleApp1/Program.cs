@@ -41,7 +41,7 @@ namespace HrukniHohlinaBot
                     services.AddSingleton<ITelegramBotClient>(provider => new TelegramBotClient(
                         token: config.GetSection("BotSettings").GetValue<string>("Token")
                         ));
-                    services.AddTransient<TelegramBotService>();
+                    services.AddSingleton<TelegramBotService>();
 
                     services.AddTransient<IUnitOfWork, UnitOfWork>();
                     services.AddTransient<IResetHoholService, ResetHoholService>();

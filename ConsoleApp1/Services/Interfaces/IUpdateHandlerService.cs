@@ -5,6 +5,6 @@ namespace HrukniHohlinaBot.Services.Interfaces
 {
     public interface IUpdateHandlerService
     {
-        Task HandleUpdate(Update update, ITelegramBotClient botClient);
+        Task HandleUpdate(Update update);
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Telegram.Bot;
+using Microsoft.Extensions.Configuration;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {
@@ -13,39 +14,27 @@ namespace HrukniHohlinaBot.Services.BotServices
         private IResetHoholService _hoholService;
         private IUnitOfWork _unitOfWork;
         private ITelegramBotClient _botClient;
-        public UpdateHandlerService(ILogger<TelegramBotService> logger,
-            IResetHoholService hoholService, IUnitOfWork unitOfWork)
+        private IConfiguration _configuration;
+
+        private string[] _claimMessages;
+        private string[] _allowationMessages;
+
+        public UpdateHandlerService(ILogger<TelegramBotService> logger, ITelegramBotClient botClient,
+            IResetHoholService hoholService, IUnitOfWork unitOfWork,
+            IConfiguration configuration)
         {
+            _botClient = botClient;
             _hoholService = hoholService;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _configuration = configuration;
+            _claimMessages = configuration.GetSection("Messages").GetSection("ClaimMessages").Get<string[]>();
+            _allowationMessages = configuration.GetSection("Messages").GetSection("AllowationMessages").Get<string[]>();
         }
 
-        static string[] claimMessages = new string[]
-        {
-            "похрюкай",
-            "похрюкай хохол",
-            "хохолина хрюкай",
-            "хрюкай",
-            "давай хрюкай",
-            "скажи хрю хрю",
-            "хрююююю",
-            "ги ги га га",
-            "ты в муте клоун",
-            "бам бам бам бам мы стреляем по хохлам",
-        };
 
-        static string[] allowationMessages = new string[]
+        public async Task HandleUpdate(Update update)
         {
-            @"Хороший хохол, Можеш хрюкать до {0}",
-            @"Умничка, Хрюкаешь до {0}",
-            @"Молодец, можеш розслабиться до {0}",
-            @"До {0} можеш на своей свинячей балакать"
-        };
-
-        public async Task HandleUpdate(Update update, ITelegramBotClient botClient)
-        {
-            _botClient = botClient;
             Member? member = await GetNewMember(update);
             if (member == null) return;
 
@@ -199,12 +188,12 @@ namespace HrukniHohlinaBot.Services.BotServices
                             _unitOfWork.HoholService.Update(hohol);
                             _unitOfWork.Commit();
 
-                            int i = random.Next(0, allowationMessages.Length);
+                            int i = random.Next(0, _allowationMessages.Length);
 
                             var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
                             await _botClient.SendTextMessageAsync(
                             chatId: message.Chat.Id,
-                                text: string.Format(allowationMessages[i], newDate),
+                                text: string.Format(_allowationMessages[i], newDate),
                                 replyParameters: message.MessageId
                             );
                         }
@@ -223,11 +212,11 @@ namespace HrukniHohlinaBot.Services.BotServices
                         );
 
                         Random rand = new Random();
-                        int i = rand.Next(0, claimMessages.Length);
+                        int i = rand.Next(0, _claimMessages.Length);
 
                         await _botClient.SendTextMessageAsync(
                             chatId: hohol.ChatId,
-                            text: $"@{hohol.Member.Username} {claimMessages[i]}"
+                            text: $"@{hohol.Member.Username} {_claimMessages[i]}"
                         );
                     }
                 }
