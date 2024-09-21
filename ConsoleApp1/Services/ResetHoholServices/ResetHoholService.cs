@@ -11,10 +11,18 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
 
         private readonly ILogger<TelegramBotService> _logger;
         private IUnitOfWork _unitOfWork;
-        public ResetHoholService(ILogger<TelegramBotService> logger, IUnitOfWork unitOfWork)
+
+        private ICommonService<Chat> _chatService;
+        private ICommonService<Hohol> _hoholService;
+        private ICommonService<Member> _memberService;
+        public ResetHoholService(ILogger<TelegramBotService> logger, IUnitOfWork unitOfWork, 
+            ICommonService<Chat> chatService, ICommonService<Hohol> hoholService, ICommonService<Member> memberService)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _chatService = chatService;
+            _hoholService = hoholService;
+            _memberService = memberService;
         }
 
         public void ResetHoholForChat(long chatId)
@@ -23,8 +31,8 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
             {
                 try
                 {
-                    var hohols = _unitOfWork.HoholService.GetAll().Where(x => x.ChatId == chatId).ToArray();
-                    var members = _unitOfWork.MemberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
+                    var hohols = _hoholService.GetAll().Where(x => x.ChatId == chatId).ToArray();
+                    var members = _memberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
 
                     if (members.Length > 0)
                     {
@@ -34,7 +42,7 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
                         var currentHohols = hohols.Where(x => x.IsActive() || x.ChatId == chatId);
                         if (currentHohols.Count() != 0)
                         {
-                            _unitOfWork.HoholService.RemoveRange(currentHohols);
+                            _hoholService.RemoveRange(currentHohols);
                             _unitOfWork.Commit();
                         }
 
@@ -45,14 +53,14 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
                             AssignmentDate = DateTime.Now.ToUniversalTime(),
                             EndWritingPeriod = DateTime.Now.ToUniversalTime(),
                         };
-                        _unitOfWork.HoholService.Add(hohol);
+                        _hoholService.Add(hohol);
                         _unitOfWork.Commit();
                     }
                 }
                 catch(Exception ex)
                 {
                     _logger.LogError($"An error occurred in ResetHoholForChat method: {ex.Message}\nThe ChatId = {chatId}");
-                    _unitOfWork.Dispose();
+                    _unitOfWork.Rollback();
                 }                
             }
         }
@@ -61,7 +69,7 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
         {
             lock (LockObject)
             {
-                var chats = _unitOfWork.ChatService.GetAll().ToList();
+                var chats = _chatService.GetAll().ToList();
                 foreach (var chat in chats)
                 {
                     ResetHoholForChat(chat.Id);

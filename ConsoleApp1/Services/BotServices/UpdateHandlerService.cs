@@ -5,31 +5,39 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Telegram.Bot;
 using Microsoft.Extensions.Configuration;
+using Chat = HrukniHohlinaBot.DB.Models.Chat;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {
     public class UpdateHandlerService : IUpdateHandlerService
     {
         private readonly ILogger<TelegramBotService> _logger;
-        private IResetHoholService _hoholService;
+        private IResetHoholService _resetHoholService;
         private IUnitOfWork _unitOfWork;
         private ITelegramBotClient _botClient;
         private IConfiguration _configuration;
+
+        private ICommonService<Member> _memberService;
+        private ICommonService<Chat> _chatService;
+        private ICommonService<Hohol> _hoholService;
 
         private string[] _claimMessages;
         private string[] _allowationMessages;
 
         public UpdateHandlerService(ILogger<TelegramBotService> logger, ITelegramBotClient botClient,
-            IResetHoholService hoholService, IUnitOfWork unitOfWork,
-            IConfiguration configuration)
+            IResetHoholService resetHoholService, IUnitOfWork unitOfWork, IConfiguration configuration,
+            ICommonService<Member> memberService, ICommonService<Chat> chatService, ICommonService<Hohol> hoholService)
         {
             _botClient = botClient;
-            _hoholService = hoholService;
+            _resetHoholService = resetHoholService;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _configuration = configuration;
             _claimMessages = configuration.GetSection("Messages").GetSection("ClaimMessages").Get<string[]>();
             _allowationMessages = configuration.GetSection("Messages").GetSection("AllowationMessages").Get<string[]>();
+            _memberService = memberService;
+            _chatService = chatService;
+            _hoholService = hoholService;
         }
 
 
@@ -40,16 +48,16 @@ namespace HrukniHohlinaBot.Services.BotServices
                 Member? member = await GetNewMember(update);
                 if (member == null) return;
 
-                var existingMember = _unitOfWork.MemberService.Get(member.Id, member.ChatId);
+                var existingMember = _memberService.Get(member.Id, member.ChatId);
                 if (existingMember == null)
                 {
-                    _unitOfWork.MemberService.Add(member);
+                    _memberService.Add(member);
                     _unitOfWork.Commit();
                     return;
                 }
                 existingMember.Username = member.Username;
                 existingMember.IsOwner = member.IsOwner;
-                _unitOfWork.MemberService.Update(existingMember);
+                _memberService.Update(existingMember);
                 _unitOfWork.Commit();
 
                 if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text == null)
@@ -76,7 +84,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             catch(Exception ex)
             {
                 _logger.LogError($"An error occurred in HandleUpdate method: {ex.Message}");
-                _unitOfWork.Dispose();
+                _unitOfWork.Rollback();
             }
         }
 
@@ -112,11 +120,11 @@ namespace HrukniHohlinaBot.Services.BotServices
 
         private async Task HandleCommand(Member member, Message message)
         {
-            var chat = _unitOfWork.ChatService.Get(member.ChatId);
+            var chat = _chatService.Get(member.ChatId);
             if (message.Text == "/start_hrukni" && member.IsOwner)
             {
                 chat.IsActive = true;
-                _unitOfWork.ChatService.Update(chat);
+                _chatService.Update(chat);
                 _unitOfWork.Commit();
 
                 await _botClient.SendTextMessageAsync(message.Chat.Id, $"Хохлы...");
@@ -125,12 +133,12 @@ namespace HrukniHohlinaBot.Services.BotServices
             else if (message.Text == "/stop_hrukni" && member.IsOwner)
             {
                 chat.IsActive = false;
-                _unitOfWork.ChatService.Update(chat);
+                _chatService.Update(chat);
                 _unitOfWork.Commit();
             }
             else if (message.Text == "/reset_hohols" && member.IsOwner)
             {
-                _hoholService.ResetHoholForChat(message.Chat.Id);
+                _resetHoholService.ResetHoholForChat(message.Chat.Id);
                 _unitOfWork.Commit();
             }
         }
@@ -151,13 +159,13 @@ namespace HrukniHohlinaBot.Services.BotServices
                         Id = newUser.Id,
                         IsOwner = memberInfo.Status == ChatMemberStatus.Creator
                     };
-                    _unitOfWork.MemberService.Add(newMember);
+                    _memberService.Add(newMember);
                     _unitOfWork.Commit();
                 }
             }
             else if (message.LeftChatMember != null)
             {
-                _unitOfWork.MemberService.Remove(message.LeftChatMember.Id, message.Chat.Id);
+                _memberService.Remove(message.LeftChatMember.Id, message.Chat.Id);
                 _unitOfWork.Commit();
             }
         }
@@ -167,12 +175,12 @@ namespace HrukniHohlinaBot.Services.BotServices
             if (myChatMember.NewChatMember.Status == ChatMemberStatus.Left ||
             myChatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
             {
-                _unitOfWork.ChatService.Remove(myChatMember.Chat.Id);
+                _chatService.Remove(myChatMember.Chat.Id);
                 _unitOfWork.Commit();
             }
             else if (myChatMember.NewChatMember.Status == ChatMemberStatus.Member)
             {
-                _unitOfWork.ChatService.Add(new DB.Models.Chat()
+                _chatService.Add(new DB.Models.Chat()
                 {
                     Id = member.ChatId,
                     IsActive = false,
@@ -190,7 +198,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 && !message.Text.ToLower().Contains("ні")
                 && !message.Text.ToLower().Contains("нє"))
                 {
-                    var hohol = _unitOfWork.HoholService.GetIncludingChilds(message.Chat.Id);
+                    var hohol = _hoholService.GetIncludingChilds(message.Chat.Id);
                     if (hohol.Member.Id == message.From.Id)
                     {
                         if (hohol != null)
@@ -199,7 +207,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                             int time = random.Next(2, 10);
 
                             hohol.EndWritingPeriod = DateTime.Now.ToUniversalTime().AddMinutes(time);
-                            _unitOfWork.HoholService.Update(hohol);
+                            _hoholService.Update(hohol);
                             _unitOfWork.Commit();
 
                             int i = random.Next(0, _allowationMessages.Length);
@@ -215,7 +223,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 }
                 else
                 {
-                    var hohol = _unitOfWork.HoholService.GetIncludingChilds(message.Chat.Id);
+                    var hohol = _hoholService.GetIncludingChilds(message.Chat.Id);
                     if (hohol == null || hohol.Member.Id != message.From.Id) return;
 
                     if (!hohol.IsAllowedToWrite())
