@@ -29,6 +29,7 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
         {
             lock (LockObject)
             {
+                using var transaction = _unitOfWork.BeginTransaction();
                 try
                 {
                     var hohols = _hoholService.GetAll().Where(x => x.ChatId == chatId).ToArray();
@@ -43,7 +44,7 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
                         if (currentHohols.Count() != 0)
                         {
                             _hoholService.RemoveRange(currentHohols);
-                            _unitOfWork.Commit();
+                            _unitOfWork.SaveChanges();
                         }
 
                         var hohol = new Hohol()
@@ -54,13 +55,14 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
                             EndWritingPeriod = DateTime.Now.ToUniversalTime(),
                         };
                         _hoholService.Add(hohol);
-                        _unitOfWork.Commit();
+                        _unitOfWork.SaveChanges();
                     }
+                    transaction.Commit();
                 }
                 catch(Exception ex)
                 {
                     _logger.LogError($"An error occurred in ResetHoholForChat method: {ex.Message}\nThe ChatId = {chatId}");
-                    _unitOfWork.Rollback();
+                    transaction.Rollback();
                 }                
             }
         }

@@ -37,7 +37,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"An error occurred: {ex.Message}");
+                    _logger.LogError($"An error occurred in StartBotAsync method: {ex.Message}");
                 }
             }
         }
@@ -74,7 +74,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"An error occurred: {ex.Message}");
+                    _logger.LogError($"An error occurred in SetNewHohols method: {ex.Message}");
                 }
             }
         }

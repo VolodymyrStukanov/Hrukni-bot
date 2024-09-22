@@ -1,11 +1,11 @@
-﻿using HrukniHohlinaBot.DB.Models;
+﻿using System.Data;
 
 namespace HrukniHohlinaBot.Services.Interfaces
 {
     public interface IUnitOfWork
     {
-        public void Commit();
-        public void Rollback();
+        public void SaveChanges();
         public void DetachAll();
+        public IDbTransaction BeginTransaction();
     }
 }

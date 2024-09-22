@@ -1,6 +1,8 @@
 ﻿using HrukniHohlinaBot.DB;
 using HrukniHohlinaBot.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
+using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 
 namespace HrukniHohlinaBot.Services.UnitOfWork
 {
@@ -11,13 +13,7 @@ namespace HrukniHohlinaBot.Services.UnitOfWork
         {
             _context = context;
         }
-
-        public void Rollback()
-        {
-            //var transaction = _context.Database.BeginTransaction();
-            //transaction.Rollback();
-        }
-        public void Commit()
+        public void SaveChanges()
         {
             _context.SaveChanges();
             DetachAll();
@@ -32,6 +28,13 @@ namespace HrukniHohlinaBot.Services.UnitOfWork
                     _context.Entry(change.Entity).State = EntityState.Detached;
                 }
             }
+        }
+
+        public IDbTransaction BeginTransaction()
+        {
+            var transaction = _context.Database.BeginTransaction();
+
+            return transaction.GetDbTransaction();
         }
     }
 }
