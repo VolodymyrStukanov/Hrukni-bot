@@ -1,5 +1,6 @@
 ﻿using HrukniHohlinaBot.DB;
 using HrukniHohlinaBot.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using EntityState = Microsoft.EntityFrameworkCore.EntityState;
@@ -30,11 +31,9 @@ namespace HrukniHohlinaBot.Services.UnitOfWork
             }
         }
 
-        public IDbTransaction BeginTransaction()
+        public IDbContextTransaction BeginTransaction()
         {
-            var transaction = _context.Database.BeginTransaction();
-
-            return transaction.GetDbTransaction();
+            return _context.Database.BeginTransaction();
         }
     }
 }

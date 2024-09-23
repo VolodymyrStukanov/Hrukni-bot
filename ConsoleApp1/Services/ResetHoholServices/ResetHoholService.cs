@@ -25,45 +25,26 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
             _memberService = memberService;
         }
 
-        public void ResetHoholForChat(long chatId)
+        public Hohol? SelectNewHohol(long chatId)
         {
             lock (LockObject)
             {
-                using var transaction = _unitOfWork.BeginTransaction();
-                try
+                var members = _memberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
+                Hohol newHohol = null;
+                if (members.Length > 0)
                 {
-                    var hohols = _hoholService.GetAll().Where(x => x.ChatId == chatId).ToArray();
-                    var members = _memberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
+                    Random rand = new Random();
+                    var i = rand.Next(0, members.Length);
 
-                    if (members.Length > 0)
+                    newHohol = new Hohol()
                     {
-                        Random rand = new Random();
-                        var i = rand.Next(0, members.Length);
-
-                        var currentHohols = hohols.Where(x => x.IsActive() || x.ChatId == chatId);
-                        if (currentHohols.Count() != 0)
-                        {
-                            _hoholService.RemoveRange(currentHohols);
-                            _unitOfWork.SaveChanges();
-                        }
-
-                        var hohol = new Hohol()
-                        {
-                            ChatId = chatId,
-                            MemberId = members[i].Id,
-                            AssignmentDate = DateTime.Now.ToUniversalTime(),
-                            EndWritingPeriod = DateTime.Now.ToUniversalTime(),
-                        };
-                        _hoholService.Add(hohol);
-                        _unitOfWork.SaveChanges();
-                    }
-                    transaction.Commit();
+                        ChatId = chatId,
+                        MemberId = members[i].Id,
+                        AssignmentDate = DateTime.Now.ToUniversalTime(),
+                        EndWritingPeriod = DateTime.Now.ToUniversalTime(),
+                    };
                 }
-                catch(Exception ex)
-                {
-                    _logger.LogError($"An error occurred in ResetHoholForChat method: {ex.Message}\nThe ChatId = {chatId}");
-                    transaction.Rollback();
-                }                
+                return newHohol;
             }
         }
 
@@ -74,7 +55,29 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
                 var chats = _chatService.GetAll().ToList();
                 foreach (var chat in chats)
                 {
-                    ResetHoholForChat(chat.Id);
+                    using var transaction = _unitOfWork.BeginTransaction();
+                    try
+                    {
+                        var currentHohol = _hoholService.Get(chat.Id);
+                        if (currentHohol != null)
+                        {
+                            _hoholService.Remove(currentHohol);
+                            _unitOfWork.SaveChanges();
+                        }
+
+                        var newHohol = SelectNewHohol(chat.Id);
+                        if (newHohol != null)
+                        {
+                            _hoholService.Add(newHohol);
+                            _unitOfWork.SaveChanges();
+                        }
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"An error occurred in ResetHohols method: {ex.Message}");
+                        transaction.Rollback();
+                    }
                 }
             }
         }

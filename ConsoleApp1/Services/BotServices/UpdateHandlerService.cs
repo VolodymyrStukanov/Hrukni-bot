@@ -43,6 +43,7 @@ namespace HrukniHohlinaBot.Services.BotServices
 
         public async Task HandleUpdate(Update update)
         {
+            using var transaction = _unitOfWork.BeginTransaction();
             try
             {
                 Member? member = await UpdateMember(update);
@@ -64,7 +65,6 @@ namespace HrukniHohlinaBot.Services.BotServices
                         && update.Message.Text[0] == '/')
                         {
                             await HandleCommand(member, update.Message);
-                            return;
                         }
                         else await MessageUpdate(update.Message);
                     }
@@ -72,11 +72,13 @@ namespace HrukniHohlinaBot.Services.BotServices
                     {
                         await MyChatMemberUpdate(update.MyChatMember, member);
                     }
-                }                
+                }
+                transaction.Commit();
             }
             catch(Exception ex)
             {
                 _logger.LogError($"An error occurred in HandleUpdate method: {ex.Message}");
+                transaction.Rollback();
             }
         }
 
@@ -85,7 +87,6 @@ namespace HrukniHohlinaBot.Services.BotServices
             Member? member = await GetMember(update);
             if (member == null) return null;
 
-            using var transaction = _unitOfWork.BeginTransaction();
             try
             {
                 var existingMember = _memberService.Get(member.Id, member.ChatId);
@@ -99,15 +100,13 @@ namespace HrukniHohlinaBot.Services.BotServices
                 existingMember.IsOwner = member.IsOwner;
                 _memberService.Update(existingMember);
                 _unitOfWork.SaveChanges();
-                transaction.Commit();
                 return member;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"An error occurred in UpdateMember method: {ex.Message}");
-                transaction.Rollback();
                 return null;
-            }
+            }     
         }
 
         private async Task<Member?> GetMember(Update update)
@@ -162,8 +161,19 @@ namespace HrukniHohlinaBot.Services.BotServices
                 }
                 else if (message.Text == "/reset_hohols" && member.IsOwner)
                 {
-                    _resetHoholService.ResetHoholForChat(message.Chat.Id);
-                    _unitOfWork.SaveChanges();
+                    var currentHohol = _hoholService.Get(member.ChatId);
+                    if (currentHohol != null)
+                    {
+                        _hoholService.Remove(currentHohol.ChatId);
+                        _unitOfWork.SaveChanges();
+                    }
+
+                    var newHohol = _resetHoholService.SelectNewHohol(member.ChatId);
+                    if(newHohol != null)
+                    {
+                        _hoholService.Add(newHohol);
+                        _unitOfWork.SaveChanges();
+                    }
                 }
             }
             catch(Exception ex)
