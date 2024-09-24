@@ -61,7 +61,7 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
                         var currentHohol = _hoholService.Get(chat.Id);
                         if (currentHohol != null)
                         {
-                            _hoholService.Remove(currentHohol);
+                            _hoholService.Remove(currentHohol.ChatId);
                             _unitOfWork.SaveChanges();
                         }
 
