@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
-using System.Data;
 
 namespace HrukniHohlinaBot.Services.Interfaces
 {
@@ -7,6 +6,7 @@ namespace HrukniHohlinaBot.Services.Interfaces
     {
         public void SaveChanges();
         public void DetachAll();
+        public void RollBack();
         public IDbContextTransaction BeginTransaction();
     }
 }

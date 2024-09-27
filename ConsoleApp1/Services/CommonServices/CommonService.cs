@@ -36,7 +36,6 @@ namespace HrukniHohlinaBot.Services.CommonServices
                 {
                     navigation.Load();
                 }
-                //_dbSet.Entry(entity).State = EntityState.Detached;
             }
             return entity;
         }
@@ -44,8 +43,6 @@ namespace HrukniHohlinaBot.Services.CommonServices
         public T? Get(params object[] key)
         {
             var entity = _dbSet.Find(key);
-            //if(entity != null)
-            //    _dbSet.Entry(entity).State = EntityState.Detached;
             return entity;
         }
 
@@ -55,9 +52,14 @@ namespace HrukniHohlinaBot.Services.CommonServices
             if (entity != null) _dbSet.Remove(entity);
         }
 
+        public void Remove(T entity)
+        {
+            _dbSet.Remove(entity);
+        }
+
         public IQueryable<T> GetAll()
         {
-            return _dbSet;
+            return _dbSet.AsNoTracking();
         }
     }
 }

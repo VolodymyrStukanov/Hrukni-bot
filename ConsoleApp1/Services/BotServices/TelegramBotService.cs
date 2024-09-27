@@ -8,7 +8,7 @@ namespace HrukniHohlinaBot.Services.BotServices
     {
         private ITelegramBotClient _botClient;
         private readonly ILogger<TelegramBotService> _logger;
-        private IResetHoholService _hoholService;
+        private IResetHoholService _resetHoholService;
         private IUpdateHandlerService _updateHandlerService;
 
         public TelegramBotService(ITelegramBotClient botClient, ILogger<TelegramBotService> logger,
@@ -16,7 +16,7 @@ namespace HrukniHohlinaBot.Services.BotServices
         {
             _logger = logger;
             _botClient = botClient;
-            _hoholService = hoholService;
+            _resetHoholService = hoholService;
             _updateHandlerService = updateHandlerService;
         }
 
@@ -34,6 +34,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                         await _updateHandlerService.HandleUpdate(update);
                         offset = update.Id + 1;
                     }
+                    Thread.Sleep(waitingTime["second"]);
                 }
                 catch (Exception ex)
                 {
@@ -46,6 +47,7 @@ namespace HrukniHohlinaBot.Services.BotServices
         private TimeOnly resetHoholsTime = new TimeOnly(6, 0, 0);
         private Dictionary<string, int> waitingTime = new Dictionary<string, int>()
         {
+            { "second", 1000 },
             { "tenSeconds", 10000 },
             { "minute", 60000 },
             { "hour", 3600000 }
@@ -61,7 +63,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                     if (time.Hour == resetHoholsTime.Hour
                         && time.Minute == resetHoholsTime.Minute)
                     {
-                        _hoholService.ResetHohols();
+                        _resetHoholService.ResetHohols();
                         Thread.Sleep(waitingTime["hour"]);
                     }
 

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Telegram.Bot;
+using HrukniHohlinaBot.Services.FilesService;
 
 
 namespace HrukniHohlinaBot
@@ -20,10 +21,7 @@ namespace HrukniHohlinaBot
         static async Task Main()
         {
 
-            var builder = new ConfigurationBuilder(); 
-            builder.SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddEnvironmentVariables();
+            var builder = new ConfigurationBuilder();
 
             IConfiguration config = builder.Build();
 
@@ -32,16 +30,28 @@ namespace HrukniHohlinaBot
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.File("logs/error/log-.txt", rollingInterval: RollingInterval.Day/*, restrictedToMinimumLevel: LogEventLevel.Warning*/)
-                .CreateLogger();
+            .CreateLogger();
 
             using var cts = new CancellationTokenSource();
             var host = Host.CreateDefaultBuilder()
-                .ConfigureServices(services =>
+                .ConfigureAppConfiguration((context, config) => {
+                    config.SetBasePath(Directory.GetCurrentDirectory())
+#if Docker
+                    .AddJsonFile("appsettings.docker.json", optional: false)
+#else
+                    .AddJsonFile("appsettings.json", optional: false)
+#endif
+                    .AddEnvironmentVariables();
+                })
+                .ConfigureServices((context, services) =>
                 {
+                    var registeredConfig = context.Configuration;
+
                     services.AddSingleton<ITelegramBotClient>(provider => new TelegramBotClient(
-                        token: config.GetSection("BotSettings").GetValue<string>("Token")
+                        token: registeredConfig.GetSection("BotSettings").GetValue<string>("Token")
                         ));
                     services.AddSingleton<TelegramBotService>();
+                    services.AddSingleton<IFilesService, FilesService>();
 
                     services.AddTransient<IUnitOfWork, UnitOfWork>();
                     services.AddTransient<IResetHoholService, ResetHoholService>();
@@ -52,7 +62,7 @@ namespace HrukniHohlinaBot
 
                     services.AddDbContext<ApplicationDbContext>(options =>
                     {
-                        options.UseNpgsql(config.GetConnectionString("DefaultConnection"));
+                        options.UseNpgsql(registeredConfig.GetConnectionString("DefaultConnection"));
                     });
                 })
                 .UseSerilog()
