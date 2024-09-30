@@ -46,13 +46,18 @@ namespace HrukniHohlinaBot.Services.BotServices
 
         public async Task HandleUpdate(Update update)
         {
-            using var transaction = _unitOfWork.BeginTransaction();
             try
             {
                 _filesService.WriteUpdate(update);
-                Member? member = await UpdateMember(update);
+                Member? member = await GetMemberFromUpdate(update);
+                if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
+                {
+                    await MyChatMemberUpdate(update.MyChatMember, member);
+                    return;
+                }
 
-                if(member != null)
+                await UpdateMember(member);
+                if (member != null)
                 {
                     if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text == null)
                     {
@@ -72,25 +77,18 @@ namespace HrukniHohlinaBot.Services.BotServices
                         }
                         else await MessageUpdate(update.Message);
                     }
-                    else if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
-                    {
-                        await MyChatMemberUpdate(update.MyChatMember, member);
-                    }
                 }
-                transaction.Commit();
             }
             catch(Exception ex)
             {
                 _logger.LogError($"------ Handling start ------ \nAn error occurred in HandleUpdate method: {ex.Message}");
                 _filesService.WriteErrorUpdate(update);
-                transaction.Rollback();
             }
         }
 
-        private async Task<Member?> UpdateMember(Update update)
+        private async Task UpdateMember(Member member)
         {
-            Member? member = await GetMemberFromUpdate(update);
-            if (member == null) return null;
+            if (member == null) return;
 
             try
             {
@@ -99,12 +97,13 @@ namespace HrukniHohlinaBot.Services.BotServices
                 {
                     _memberService.Add(member);
                     _unitOfWork.SaveChanges();
-                    return null;
                 }
-                existingMember.Username = member.Username;
-                existingMember.IsOwner = member.IsOwner;
-                _unitOfWork.SaveChanges();
-                return member;
+                else
+                {
+                    existingMember.Username = member.Username;
+                    existingMember.IsOwner = member.IsOwner;
+                    _unitOfWork.SaveChanges();
+                }
             }
             catch (Exception ex)
             {
