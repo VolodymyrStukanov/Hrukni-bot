@@ -2,6 +2,7 @@
 using HrukniHohlinaBot.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Text;
 using Telegram.Bot.Types;
 using File = System.IO.File;
@@ -45,8 +46,10 @@ namespace HrukniHohlinaBot.Services.FilesService
                 {
                     using (var filestream = File.Create(fullPath))
                     {
-
-                        var text = Encoding.ASCII.GetBytes(System.Text.Json.JsonSerializer.Serialize(obj));
+                        var text = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(obj, new JsonSerializerSettings
+                        {
+                            TypeNameHandling = TypeNameHandling.Auto
+                        }));
                         filestream.Write(text);
                     }
                 }
@@ -59,15 +62,14 @@ namespace HrukniHohlinaBot.Services.FilesService
 
         public void WriteErrorUpdate(Update update)
         {
-            var folderPath = Path.Combine(_currentDir, _updateStorageLocation);
+            var folderPath = Path.Combine(_currentDir, _errorUpdateStorageLocation);
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 
-            WriteObjectToJSON(
-                Path.Combine(_currentDir, 
-                    _errorUpdateStorageLocation,
-                    string.Format(_errorUpdateStorageFileNamePattern, DateTime.Now.ToString("dd-MM-yyyy_HH.mm.ss.ffff"))), 
-                update);
+            var datetime = DateTime.Now.ToString("dd-MM-yyyy_HH.mm.ss.ffff");
+            var fullPath = Path.Combine(folderPath, string.Format(_errorUpdateStorageFileNamePattern, datetime));
+
+            WriteObjectToJSON(fullPath, update);
         }
 
         public void WriteUpdate(Update update)

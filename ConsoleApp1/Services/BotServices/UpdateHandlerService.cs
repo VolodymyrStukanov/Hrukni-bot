@@ -39,8 +39,10 @@ namespace HrukniHohlinaBot.Services.BotServices
             _hoholService = hoholService;
             _filesService = filesService;
 
+#if !Test
             _claimMessages = configuration.GetSection("Messages").GetSection("ClaimMessages").Get<string[]>();
             _allowationMessages = configuration.GetSection("Messages").GetSection("AllowationMessages").Get<string[]>();
+#endif
         }
 
 
@@ -48,7 +50,9 @@ namespace HrukniHohlinaBot.Services.BotServices
         {
             try
             {
+#if !Test
                 _filesService.WriteUpdate(update);
+#endif
                 Member? member = await GetMemberFromUpdate(update);
                 if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
                 {
@@ -82,7 +86,9 @@ namespace HrukniHohlinaBot.Services.BotServices
             catch(Exception ex)
             {
                 _logger.LogError($"------ Handling start ------ \nAn error occurred in HandleUpdate method: {ex.Message}");
+#if !Test
                 _filesService.WriteErrorUpdate(update);
+#endif
             }
         }
 
@@ -130,6 +136,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             }
             else return null;
 
+#if !Test
             ChatMember? memberInfo = await _botClient.GetChatMemberAsync(chatId, memberId);
             Member member = new Member()
             {
@@ -138,6 +145,15 @@ namespace HrukniHohlinaBot.Services.BotServices
                 Id = memberId,
                 IsOwner = memberInfo.Status == ChatMemberStatus.Creator
             };
+#else
+            Member member = new Member()
+            {
+                Username = "memberUsername",
+                ChatId = chatId,
+                Id = memberId,
+                IsOwner = false
+            };
+#endif
 
             return member;
         }
@@ -152,8 +168,10 @@ namespace HrukniHohlinaBot.Services.BotServices
                     chat.IsActive = true;
                     _unitOfWork.SaveChanges();
 
+#if !Test
                     await _botClient.SendTextMessageAsync(message.Chat.Id, $"Хохлы...");
                     await _botClient.SendTextMessageAsync(message.Chat.Id, $"Готовтесь хрюкать");
+#endif
                 }
                 else if (message.Text == "/stop_hrukni" && member.IsOwner)
                 {
@@ -194,6 +212,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                     {
                         if (newUser.IsBot) continue;
 
+#if !Test
                         ChatMember? memberInfo = await _botClient.GetChatMemberAsync(message.Chat.Id, newUser.Id);
                         Member newMember = new Member()
                         {
@@ -202,6 +221,15 @@ namespace HrukniHohlinaBot.Services.BotServices
                             Id = newUser.Id,
                             IsOwner = memberInfo.Status == ChatMemberStatus.Creator
                         };
+#else
+                        Member newMember = new Member()
+                        {
+                            Username = newUser.Username,
+                            ChatId = message.Chat.Id,
+                            Id = newUser.Id,
+                            IsOwner = false
+                        };
+#endif
                         _memberService.Add(newMember);
                         _unitOfWork.SaveChanges();
                     }
@@ -270,11 +298,14 @@ namespace HrukniHohlinaBot.Services.BotServices
                                 int i = random.Next(0, _allowationMessages.Length);
 
                                 var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
+
+#if !Test
                                 await _botClient.SendTextMessageAsync(
                                 chatId: message.Chat.Id,
                                     text: string.Format(_allowationMessages[i], newDate),
                                     replyParameters: message.MessageId
                                 );
+#endif
                             }
                         }
                     }
@@ -284,18 +315,23 @@ namespace HrukniHohlinaBot.Services.BotServices
 
                         if (!hohol.IsAllowedToWrite())
                         {
+
+#if !Test
                             await _botClient.DeleteMessageAsync(
                                 chatId: hohol.ChatId,
                                 messageId: message.MessageId
                             );
+#endif
 
                             Random rand = new Random();
                             int i = rand.Next(0, _claimMessages.Length);
 
+#if !Test
                             await _botClient.SendTextMessageAsync(
                                 chatId: hohol.ChatId,
                                 text: $"@{hohol.Member.Username} {_claimMessages[i]}"
                             );
+#endif
                         }
                     }
                 }
