@@ -296,11 +296,11 @@ namespace HrukniHohlinaBot.Services.BotServices
                                 hohol.EndWritingPeriod = DateTime.Now.ToUniversalTime().AddMinutes(time);
                                 _unitOfWork.SaveChanges();
 
+#if !Test
                                 int i = random.Next(0, _allowationMessages.Length);
 
                                 var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
 
-#if !Test
                                 await _botClient.SendTextMessageAsync(
                                 chatId: message.Chat.Id,
                                     text: string.Format(_allowationMessages[i], newDate),
@@ -322,12 +322,10 @@ namespace HrukniHohlinaBot.Services.BotServices
                                 chatId: hohol.ChatId,
                                 messageId: message.MessageId
                             );
-#endif
 
                             Random rand = new Random();
                             int i = rand.Next(0, _claimMessages.Length);
 
-#if !Test
                             await _botClient.SendTextMessageAsync(
                                 chatId: hohol.ChatId,
                                 text: $"@{hohol.Member.Username} {_claimMessages[i]}"
