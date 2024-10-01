@@ -151,7 +151,8 @@ namespace HrukniHohlinaBot.Services.BotServices
                 Username = "memberUsername",
                 ChatId = chatId,
                 Id = memberId,
-                IsOwner = false
+                IsOwner = (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
+                 || (update.Message != null && update.Message.Text != null && update.Message.Text[0] == '/')
             };
 #endif
 
