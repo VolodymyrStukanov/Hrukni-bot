@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ConsoleApp1\HrukniHohlinaBot.csproj" />
+    <ProjectReference Include="..\ConsoleApp1\HrukniBot.csproj" />
   </ItemGroup>
 
   <ItemGroup>
