@@ -155,6 +155,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                     IsOwner = (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
                      || (update.Message != null && update.Message.Text != null && update.Message.Text[0] == '/')
                 };
+                MyChatMemberUpdate(update.MyChatMember, member);
 #endif
                 return null;
             }

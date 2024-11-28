@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Telegram.Bot;
 using HrukniHohlinaBot.Services.FilesService;
+using System.Configuration;
 
 
 namespace HrukniHohlinaBot
@@ -68,7 +69,7 @@ namespace HrukniHohlinaBot
                 .UseSerilog()
                 .Build();
 
-            await host.RunAsync();
+            host.RunAsync();
 
             var botService = host.Services.GetRequiredService<TelegramBotService>();
             await botService.StartBotAsync(cts.Token);
