@@ -48,7 +48,7 @@ namespace HrukniHohlinaBot
                     var registeredConfig = context.Configuration;
 
                     services.AddSingleton<ITelegramBotClient>(provider => new TelegramBotClient(
-                        token: registeredConfig.GetSection("BotSettings").GetValue<string>("Token")
+                        token: registeredConfig.GetSection("BotSettings").GetValue<string>("Token")!
                         ));
                     services.AddSingleton<TelegramBotService>();
                     services.AddSingleton<IFilesService, FilesService>();
@@ -68,10 +68,10 @@ namespace HrukniHohlinaBot
                 .UseSerilog()
                 .Build();
 
-            host.RunAsync();
+            await host.RunAsync();
 
             var botService = host.Services.GetRequiredService<TelegramBotService>();
-            botService.StartBotAsync(cts.Token);
+            await botService.StartBotAsync(cts.Token);
         }
     }
 }

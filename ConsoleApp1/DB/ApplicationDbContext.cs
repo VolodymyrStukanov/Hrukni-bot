@@ -7,13 +7,12 @@ namespace HrukniHohlinaBot.DB
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            builder.Entity<Member>(entity =>
+            modelBuilder.Entity<Member>(entity =>
             {
                 entity.HasKey(x => new { x.Id, x.ChatId });
 
@@ -23,7 +22,7 @@ namespace HrukniHohlinaBot.DB
                 .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
             });
 
-            builder.Entity<Hohol>(entity =>
+            modelBuilder.Entity<Hohol>(entity =>
             {
                 entity.HasKey(x => x.ChatId);
 

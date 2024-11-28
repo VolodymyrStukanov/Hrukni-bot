@@ -6,18 +6,18 @@ namespace HrukniHohlinaBot.Services.BotServices
 {
     public class TelegramBotService : ITelegramBotService
     {
-        private ITelegramBotClient _botClient;
-        private readonly ILogger<TelegramBotService> _logger;
-        private IResetHoholService _resetHoholService;
-        private IUpdateHandlerService _updateHandlerService;
+        private readonly ITelegramBotClient botClient;
+        private readonly ILogger<TelegramBotService> logger;
+        private readonly IResetHoholService resetHoholService;
+        private readonly IUpdateHandlerService updateHandlerService;
 
         public TelegramBotService(ITelegramBotClient botClient, ILogger<TelegramBotService> logger,
             IResetHoholService hoholService, IUpdateHandlerService updateHandlerService)
         {
-            _logger = logger;
-            _botClient = botClient;
-            _resetHoholService = hoholService;
-            _updateHandlerService = updateHandlerService;
+            this.logger = logger;
+            this.botClient = botClient;
+            resetHoholService = hoholService;
+            this.updateHandlerService = updateHandlerService;
         }
 
         public async Task StartBotAsync(CancellationToken cancellationToken)
@@ -28,24 +28,24 @@ namespace HrukniHohlinaBot.Services.BotServices
             {
                 try
                 {
-                    var updates = await _botClient.GetUpdatesAsync(offset, timeout: 100, cancellationToken: cancellationToken);
+                    var updates = await botClient.GetUpdatesAsync(offset, timeout: 100, cancellationToken: cancellationToken);
                     foreach (var update in updates)
                     {
-                        await _updateHandlerService.HandleUpdate(update);
+                        await updateHandlerService.HandleUpdate(update);
                         offset = update.Id + 1;
                     }
                     Thread.Sleep(waitingTime["second"]);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"An error occurred in StartBotAsync method: {ex.Message}");
+                    logger.LogError(ex, $"An error occurred in StartBotAsync method");
                 }
             }
         }
 
 
-        private TimeOnly resetHoholsTime = new TimeOnly(6, 0, 0);
-        private Dictionary<string, int> waitingTime = new Dictionary<string, int>()
+        private readonly TimeOnly resetHoholsTime = new TimeOnly(6, 0, 0);
+        private readonly Dictionary<string, int> waitingTime = new Dictionary<string, int>()
         {
             { "second", 1000 },
             { "tenSeconds", 10000 },
@@ -54,16 +54,16 @@ namespace HrukniHohlinaBot.Services.BotServices
         };
         private void SetNewHohols()
         {
-            while (true)
+            try
             {
-                try
+                while (true)
                 {
                     var time = DateTime.Now;
 
                     if (time.Hour == resetHoholsTime.Hour
                         && time.Minute == resetHoholsTime.Minute)
                     {
-                        _resetHoholService.ResetHohols();
+                        resetHoholService.ResetHohols();
                         Thread.Sleep(waitingTime["hour"]);
                     }
 
@@ -74,10 +74,10 @@ namespace HrukniHohlinaBot.Services.BotServices
                     else 
                         Thread.Sleep(waitingTime["tenSeconds"]);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"An error occurred in SetNewHohols method: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(exception: ex, $"An error occurred in SetNewHohols method");
             }
         }
     }

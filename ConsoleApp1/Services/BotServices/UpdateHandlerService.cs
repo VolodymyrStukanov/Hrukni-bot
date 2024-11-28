@@ -11,59 +11,53 @@ namespace HrukniHohlinaBot.Services.BotServices
 {
     public class UpdateHandlerService : IUpdateHandlerService
     {
-        private readonly ILogger<TelegramBotService> _logger;
-        private IResetHoholService _resetHoholService;
-        private IUnitOfWork _unitOfWork;
-        private ITelegramBotClient _botClient;
-        private IConfiguration _configuration;
-        private IFilesService _filesService;
+        private readonly ILogger<UpdateHandlerService> logger;
+        private readonly IResetHoholService resetHoholService;
+        private readonly IUnitOfWork unitOfWork;
+        private readonly ITelegramBotClient botClient;
+        private readonly IFilesService filesService;
 
-        private ICommonService<Member> _memberService;
-        private ICommonService<Chat> _chatService;
-        private ICommonService<Hohol> _hoholService;
+        private readonly ICommonService<Member> memberService;
+        private readonly ICommonService<Chat> chatService;
+        private readonly ICommonService<Hohol> hoholService;
 
-        private string[] _claimMessages;
-        private string[] _allowationMessages;
+        private readonly string[] claimMessages;
+        private readonly string[] allowationMessages;
 
-        public UpdateHandlerService(ILogger<TelegramBotService> logger, ITelegramBotClient botClient,
+        public UpdateHandlerService(ILogger<UpdateHandlerService> logger, ITelegramBotClient botClient,
             IResetHoholService resetHoholService, IUnitOfWork unitOfWork, IConfiguration configuration, IFilesService filesService,
             ICommonService<Member> memberService, ICommonService<Chat> chatService, ICommonService<Hohol> hoholService)
         {
-            _botClient = botClient;
-            _resetHoholService = resetHoholService;
-            _unitOfWork = unitOfWork;
-            _logger = logger;
-            _configuration = configuration;
-            _memberService = memberService;
-            _chatService = chatService;
-            _hoholService = hoholService;
-            _filesService = filesService;
+            this.botClient = botClient;
+            this.resetHoholService = resetHoholService;
+            this.unitOfWork = unitOfWork;
+            this.logger = logger;
+            this.memberService = memberService;
+            this.chatService = chatService;
+            this.hoholService = hoholService;
+            this.filesService = filesService;
 
 #if !Test
-            _claimMessages = configuration.GetSection("Messages").GetSection("ClaimMessages").Get<string[]>();
-            _allowationMessages = configuration.GetSection("Messages").GetSection("AllowationMessages").Get<string[]>();
+            claimMessages = configuration.GetSection("Messages").GetSection("ClaimMessages").Get<string[]>()!;
+            allowationMessages = configuration.GetSection("Messages").GetSection("AllowationMessages").Get<string[]>()!;
 #endif
         }
-
 
         public async Task HandleUpdate(Update update)
         {
             try
             {
 #if !Test
-                _filesService.WriteUpdate(update);
+                filesService.WriteUpdate(update);
 #endif
-                Member? member = await GetMemberFromUpdate(update);
-                if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
-                {
-                    await MyChatMemberUpdate(update.MyChatMember, member);
-                    return;
-                }
+                Member? member = await GetMemberFromUpdate(update);                
 
-                await UpdateMember(member);
                 if (member != null)
                 {
-                    if (update.Type == UpdateType.Message && update.Message != null && update.Message.Text == null)
+                    UpdateMember(member);
+                    if (update.Type == UpdateType.Message 
+                        && update.Message != null 
+                        && update.Message.Text == null)
                     {
                         await ChatMemberUpdate(update.Message);
                     }
@@ -72,89 +66,99 @@ namespace HrukniHohlinaBot.Services.BotServices
                         && update.Message.Text != null
                         && update.Message.From != null)
                     {
-                        if (update.Type == UpdateType.Message
-                        && update.Message != null
-                        && update.Message.Text != null
-                        && update.Message.Text[0] == '/')
+                        if (update.Message.Text[0] == '/')
                         {
                             await HandleCommand(member, update.Message);
                         }
-                        else await MessageUpdate(update.Message);
+                        else
+                        {
+                            await MessageUpdate(update.Message);
+                        }
                     }
                 }
             }
             catch(Exception ex)
             {
-                _logger.LogError($"------ Handling start ------ \nAn error occurred in HandleUpdate method: {ex.Message}");
+                logger.LogError(ex, $"------ Handling start ------ \nAn error occurred in HandleUpdate method");
 #if !Test
-                _filesService.WriteErrorUpdate(update);
+                filesService.WriteErrorUpdate(update);
 #endif
             }
         }
 
-        private async Task UpdateMember(Member member)
+        private void UpdateMember(Member member)
         {
-            if (member == null) return;
-
             try
             {
-                var existingMember = _memberService.Get(member.Id, member.ChatId);
+                var existingMember = memberService.Get(member.Id, member.ChatId);
                 if (existingMember == null)
                 {
-                    _memberService.Add(member);
-                    _unitOfWork.SaveChanges();
+                    memberService.Add(member);
+                    unitOfWork.SaveChanges();
                 }
                 else
                 {
                     existingMember.Username = member.Username;
                     existingMember.IsOwner = member.IsOwner;
-                    _unitOfWork.SaveChanges();
+                    unitOfWork.SaveChanges();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred in UpdateMember method: {ex.Message}");
-                throw ex;
+                logger.LogError(ex, $"An error occurred in UpdateMember method");
             }     
         }
 
         private async Task<Member?> GetMemberFromUpdate(Update update)
         {
-            long chatId;
-            long memberId;
+            Member member;
             if (update.Type == UpdateType.Message && update.Message != null && update.Message.From != null)
             {
-                Message? message = update.Message;
-                chatId = message.Chat.Id;
-                memberId = message.From.Id;
+#if !Test
+                ChatMember? memberInfo = await botClient.GetChatMemberAsync(update.Message.Chat.Id, update.Message.From.Id);
+                member = new Member()
+                {
+                    Username = memberInfo.User.Username,
+                    ChatId = update.Message.Chat.Id,
+                    Id = update.Message.From.Id,
+                    IsOwner = memberInfo.Status == ChatMemberStatus.Creator
+                };
+#else
+                member = new Member()
+                {
+                    Username = "memberUsername",
+                    ChatId = update.Message.Chat.Id,
+                    Id = update.Message.From.Id,
+                    IsOwner = (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
+                     || (update.Message != null && update.Message.Text != null && update.Message.Text[0] == '/')
+                };
+#endif
             }
             else if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
             {
-                ChatMemberUpdated? myChatMember = update.MyChatMember;
-                chatId = myChatMember.Chat.Id;
-                memberId = myChatMember.From.Id;
+#if !Test
+                ChatMember? memberInfo = await botClient.GetChatMemberAsync(update.MyChatMember.Chat.Id, update.MyChatMember.From.Id);
+                member = new Member()
+                {
+                    Username = memberInfo.User.Username,
+                    ChatId = update.MyChatMember.Chat.Id,
+                    Id = update.MyChatMember.From.Id,
+                    IsOwner = memberInfo.Status == ChatMemberStatus.Creator
+                };
+                MyChatMemberUpdate(update.MyChatMember, member);
+#else
+                member = new Member()
+                {
+                    Username = "memberUsername",
+                    ChatId = update.MyChatMember.Chat.Id,
+                    Id = update.MyChatMember.From.Id,
+                    IsOwner = (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
+                     || (update.Message != null && update.Message.Text != null && update.Message.Text[0] == '/')
+                };
+#endif
+                return null;
             }
             else return null;
-
-#if !Test
-            ChatMember? memberInfo = await _botClient.GetChatMemberAsync(chatId, memberId);
-            Member member = new Member()
-            {
-                Username = memberInfo.User.Username,
-                ChatId = chatId,
-                Id = memberId,
-                IsOwner = memberInfo.Status == ChatMemberStatus.Creator
-            };
-#else
-            Member member = new Member()
-            {
-                Username = "memberUsername",
-                ChatId = chatId,
-                Id = memberId,
-                IsOwner = (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
-                 || (update.Message != null && update.Message.Text != null && update.Message.Text[0] == '/')
-            };
-#endif
 
             return member;
         }
@@ -163,43 +167,48 @@ namespace HrukniHohlinaBot.Services.BotServices
         {
             try
             {
-                var chat = _chatService.Get(member.ChatId);
+                var chat = chatService.Get(member.ChatId);
+                if (chat == null)
+                {
+                    logger.LogError($"An error occurred in HandleCommand method. \nThe chat with id {member.ChatId} was not found");
+                    return;
+                }
+
                 if (message.Text == "/start_hrukni" && member.IsOwner)
                 {
                     chat.IsActive = true;
-                    _unitOfWork.SaveChanges();
+                    unitOfWork.SaveChanges();
 
 #if !Test
-                    await _botClient.SendTextMessageAsync(message.Chat.Id, $"Хохлы...");
-                    await _botClient.SendTextMessageAsync(message.Chat.Id, $"Готовтесь хрюкать");
+                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Хохлы...");
+                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Готовтесь хрюкать");
 #endif
                 }
                 else if (message.Text == "/stop_hrukni" && member.IsOwner)
                 {
                     chat.IsActive = false;
-                    _unitOfWork.SaveChanges();
+                    unitOfWork.SaveChanges();
                 }
                 else if (message.Text == "/reset_hohols" && member.IsOwner)
                 {
-                    var currentHohol = _hoholService.Get(member.ChatId);
+                    var currentHohol = hoholService.Get(chat.Id);
                     if (currentHohol != null)
                     {
-                        _hoholService.Remove(currentHohol);
-                        _unitOfWork.SaveChanges();
+                        hoholService.Remove(currentHohol);
+                        unitOfWork.SaveChanges();
                     }
 
-                    var newHohol = _resetHoholService.SelectNewHohol(member.ChatId);
+                    var newHohol = resetHoholService.SelectNewHohol(chat.Id);
                     if(newHohol != null)
                     {
-                        _hoholService.Add(newHohol);
-                        _unitOfWork.SaveChanges();
+                        hoholService.Add(newHohol);
+                        unitOfWork.SaveChanges();
                     }
                 }
             }
             catch(Exception ex)
             {
-                _logger.LogError($"An error occurred in HandleCommand method: {ex.Message}");
-                throw ex;
+                logger.LogError(ex, $"An error occurred in HandleCommand method");
             }
         }
 
@@ -214,7 +223,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                         if (newUser.IsBot) continue;
 
 #if !Test
-                        ChatMember? memberInfo = await _botClient.GetChatMemberAsync(message.Chat.Id, newUser.Id);
+                        ChatMember? memberInfo = await botClient.GetChatMemberAsync(message.Chat.Id, newUser.Id);
                         Member newMember = new Member()
                         {
                             Username = newUser.Username,
@@ -231,46 +240,45 @@ namespace HrukniHohlinaBot.Services.BotServices
                             IsOwner = false
                         };
 #endif
-                        _memberService.Add(newMember);
-                        _unitOfWork.SaveChanges();
+                        memberService.Add(newMember);
+                        unitOfWork.SaveChanges();
                     }
                 }
                 else if (message.LeftChatMember != null)
                 {
-                    _memberService.Remove(message.LeftChatMember.Id, message.Chat.Id);
-                    _unitOfWork.SaveChanges();
+                    memberService.Remove(message.LeftChatMember.Id, message.Chat.Id);
+                    unitOfWork.SaveChanges();
                 }
             }
             catch(Exception ex)
             {
-                _logger.LogError($"An error occurred in ChatMemberUpdate method: {ex.Message}");
+                logger.LogError(ex, $"An error occurred in ChatMemberUpdate method");
             }
         }
 
-        private async Task MyChatMemberUpdate(ChatMemberUpdated myChatMember, Member member)
+        private void MyChatMemberUpdate(ChatMemberUpdated myChatMember, Member member)
         {
             try
             {
                 if (myChatMember.NewChatMember.Status == ChatMemberStatus.Left ||
                 myChatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
                 {
-                    _chatService.Remove(myChatMember.Chat.Id);
-                    _unitOfWork.SaveChanges();
+                    chatService.Remove(myChatMember.Chat.Id);
+                    unitOfWork.SaveChanges();
                 }
                 else if (myChatMember.NewChatMember.Status == ChatMemberStatus.Member)
                 {
-                    _chatService.Add(new Chat()
+                    chatService.Add(new Chat()
                     {
                         Id = member.ChatId,
                         IsActive = false,
                     });
-                    _unitOfWork.SaveChanges();
+                    unitOfWork.SaveChanges();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred in MyChatMemberUpdate method: {ex.Message}");
-                throw ex;
+                logger.LogError(ex, $"An error occurred in MyChatMemberUpdate method");
             }
         }
 
@@ -280,65 +288,61 @@ namespace HrukniHohlinaBot.Services.BotServices
             {
                 if (message.Date.ToLocalTime().CompareTo(DateTime.Now.AddMinutes(-2)) > 0)
                 {
-                    var hohol = _hoholService.GetIncludingChilds(message.Chat.Id);
-                    if (message.Text.ToLower().Contains("хрю")
-                    && !message.Text.ToLower().Contains("не")
-                    && !message.Text.ToLower().Contains("ні")
-                    && !message.Text.ToLower().Contains("нє"))
+                    var hohol = hoholService.GetIncludingChilds(message.Chat.Id);
+                    if(hohol != null)
                     {
-                        if (hohol.Member.Id == message.From.Id)
+                        if (message.Text!.ToLower().Contains("хрю"))
                         {
-                            if (hohol != null)
+                            if (hohol.Member.Id == message.From!.Id)
                             {
                                 Random random = new Random();
                                 int time = random.Next(2, 10);
 
                                 hohol.EndWritingPeriod = DateTime.Now.ToUniversalTime().AddMinutes(time);
-                                _unitOfWork.SaveChanges();
+                                unitOfWork.SaveChanges();
 
 #if !Test
-                                int i = random.Next(0, _allowationMessages.Length);
+                                int i = random.Next(0, allowationMessages.Length);
 
                                 var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
 
-                                await _botClient.SendTextMessageAsync(
+                                await botClient.SendTextMessageAsync(
                                 chatId: message.Chat.Id,
-                                    text: string.Format(_allowationMessages[i], newDate),
+                                    text: string.Format(allowationMessages[i], newDate),
                                     replyParameters: message.MessageId
                                 );
 #endif
                             }
                         }
-                    }
-                    else
-                    {
-                        if (hohol == null || hohol.Member.Id != message.From.Id) return;
-
-                        if (!hohol.IsAllowedToWrite())
+                        else
                         {
+                            if (hohol.Member.Id != message.From!.Id) return;
+
+                            if (!hohol.IsAllowedToWrite())
+                            {
 
 #if !Test
-                            await _botClient.DeleteMessageAsync(
-                                chatId: hohol.ChatId,
-                                messageId: message.MessageId
-                            );
+                                await botClient.DeleteMessageAsync(
+                                    chatId: hohol.ChatId,
+                                    messageId: message.MessageId
+                                );
 
-                            Random rand = new Random();
-                            int i = rand.Next(0, _claimMessages.Length);
+                                Random rand = new Random();
+                                int i = rand.Next(0, claimMessages.Length);
 
-                            await _botClient.SendTextMessageAsync(
-                                chatId: hohol.ChatId,
-                                text: $"@{hohol.Member.Username} {_claimMessages[i]}"
-                            );
+                                await botClient.SendTextMessageAsync(
+                                    chatId: hohol.ChatId,
+                                    text: $"@{hohol.Member.Username} {claimMessages[i]}"
+                                );
 #endif
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred in MessageUpdate method: {ex.Message}");
-                throw ex;
+                logger.LogError(ex, $"An error occurred in MessageUpdate method");
             }            
         }
     }
