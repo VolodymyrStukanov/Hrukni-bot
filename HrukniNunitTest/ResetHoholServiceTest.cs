@@ -1,7 +1,7 @@
 ﻿using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.DB;
 using Microsoft.EntityFrameworkCore;
-using HrukniHohlinaBot.Services.ResetHoholServices;
+using HrukniHohlinaBot.Services.HoholServices;
 using HrukniHohlinaBot.Services.CommonServices;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using NUnit.Framework.Legacy;
@@ -72,7 +72,7 @@ namespace HrukniNunitTest
             var memberService = new CommonService<Member>(_context);
             var hoholService = new CommonService<Hohol>(_context);
             var unitOfWork = new UnitOfWork(_context, logger);
-            var resetHoholServie = new ResetHoholService(null, unitOfWork, chatService, hoholService, memberService);
+            var resetHoholServie = new HoholsService(null, unitOfWork, chatService, hoholService, memberService);
 
             var chat1Id = 1l;
             var chat2Id = 2l;

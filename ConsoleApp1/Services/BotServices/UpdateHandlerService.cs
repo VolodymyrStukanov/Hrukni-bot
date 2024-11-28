@@ -12,7 +12,7 @@ namespace HrukniHohlinaBot.Services.BotServices
     public class UpdateHandlerService : IUpdateHandlerService
     {
         private readonly ILogger<UpdateHandlerService> logger;
-        private readonly IResetHoholService resetHoholService;
+        private readonly IHoholsService resetHoholService;
         private readonly IUnitOfWork unitOfWork;
         private readonly ITelegramBotClient botClient;
         private readonly IFilesService filesService;
@@ -25,7 +25,7 @@ namespace HrukniHohlinaBot.Services.BotServices
         private readonly string[] allowationMessages;
 
         public UpdateHandlerService(ILogger<UpdateHandlerService> logger, ITelegramBotClient botClient,
-            IResetHoholService resetHoholService, IUnitOfWork unitOfWork, IConfiguration configuration, IFilesService filesService,
+            IHoholsService resetHoholService, IUnitOfWork unitOfWork, IConfiguration configuration, IFilesService filesService,
             ICommonService<Member> memberService, ICommonService<Chat> chatService, ICommonService<Hohol> hoholService)
         {
             this.botClient = botClient;
@@ -294,7 +294,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                     {
                         if (message.Text!.ToLower().Contains("хрю"))
                         {
-                            if (hohol.Member.Id == message.From!.Id)
+                            if (hohol.Member!.Id == message.From!.Id)
                             {
                                 Random random = new Random();
                                 int time = random.Next(2, 10);
@@ -317,7 +317,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                         }
                         else
                         {
-                            if (hohol.Member.Id != message.From!.Id) return;
+                            if (hohol.Member!.Id != message.From!.Id) return;
 
                             if (!hohol.IsAllowedToWrite())
                             {

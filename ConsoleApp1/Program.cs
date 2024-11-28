@@ -2,7 +2,7 @@
 using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.Services.BotServices;
 using HrukniHohlinaBot.Services.CommonServices;
-using HrukniHohlinaBot.Services.ResetHoholServices;
+using HrukniHohlinaBot.Services.HoholServices;
 using HrukniHohlinaBot.Services.Interfaces;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Telegram.Bot;
 using HrukniHohlinaBot.Services.FilesService;
-using System.Configuration;
+using HrukniBot.Services.HoholServices;
 
 
 namespace HrukniHohlinaBot
@@ -55,7 +55,7 @@ namespace HrukniHohlinaBot
                     services.AddSingleton<IFilesService, FilesService>();
 
                     services.AddTransient<IUnitOfWork, UnitOfWork>();
-                    services.AddTransient<IResetHoholService, ResetHoholService>();
+                    services.AddTransient<IHoholsService, HoholsService>();
                     services.AddTransient<ICommonService<Chat>, CommonService<Chat>>();
                     services.AddTransient<ICommonService<Member>, CommonService<Member>>();
                     services.AddTransient<ICommonService<Hohol>, CommonService<Hohol>>();
@@ -65,6 +65,8 @@ namespace HrukniHohlinaBot
                     {
                         options.UseNpgsql(registeredConfig.GetConnectionString("DefaultConnection"));
                     });
+
+                    services.AddHostedService<ResetHoholsService>();
                 })
                 .UseSerilog()
                 .Build();

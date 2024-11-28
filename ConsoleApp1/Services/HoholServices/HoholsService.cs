@@ -2,19 +2,20 @@
 using HrukniHohlinaBot.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace HrukniHohlinaBot.Services.ResetHoholServices
+namespace HrukniHohlinaBot.Services.HoholServices
 {
-    public class ResetHoholService : IResetHoholService
+    public class HoholsService : IHoholsService
     {
         readonly object LockObject = new object();
 
-        private readonly ILogger<ResetHoholService> logger;
+        private readonly ILogger<HoholsService> logger;
         private readonly IUnitOfWork unitOfWork;
 
         private readonly ICommonService<Chat> chatService;
         private readonly ICommonService<Hohol> hoholService;
         private readonly ICommonService<Member> memberService;
-        public ResetHoholService(ILogger<ResetHoholService> logger, IUnitOfWork unitOfWork, 
+
+        public HoholsService(ILogger<HoholsService> logger, IUnitOfWork unitOfWork, 
             ICommonService<Chat> chatService, ICommonService<Hohol> hoholService, ICommonService<Member> memberService)
         {
             this.logger = logger;

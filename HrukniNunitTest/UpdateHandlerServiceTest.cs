@@ -2,7 +2,7 @@
 using HrukniHohlinaBot.DB;
 using Microsoft.EntityFrameworkCore;
 using HrukniHohlinaBot.Services.CommonServices;
-using HrukniHohlinaBot.Services.ResetHoholServices;
+using HrukniHohlinaBot.Services.HoholServices;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Telegram.Bot.Types;
 using HrukniHohlinaBot.Services.BotServices;
@@ -34,7 +34,7 @@ namespace HrukniNunitTest
             var hoholService = new CommonService<Hohol>(_context);
             var chatService = new CommonService<HrukniHohlinaBot.DB.Models.Chat>(_context);
             var memberService = new CommonService<Member>(_context);
-            var resetHoholService = new ResetHoholService(null, unitOfWork, chatService, hoholService, memberService);
+            var resetHoholService = new HoholsService(null, unitOfWork, chatService, hoholService, memberService);
 
             var updateHandlerService = new UpdateHandlerService(null,null, resetHoholService, unitOfWork, null, null, memberService, chatService, hoholService);
 
