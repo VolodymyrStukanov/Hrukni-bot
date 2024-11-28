@@ -6,19 +6,19 @@ using HrukniHohlinaBot.Services.ResetHoholServices;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Telegram.Bot.Types;
 using HrukniHohlinaBot.Services.BotServices;
-using HrukniHohlinaBot.Services.FilesService;
-using HrukniHohlinaBot.Services.Interfaces;
 using HrukniNunitTest.ServicesForTesting;
 using Newtonsoft.Json;
 using NUnit.Framework.Legacy;
-using System;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace HrukniNunitTest
 {
     public class UpdateHandlerServiceTest
     {
         private readonly ApplicationDbContext _context;
-        private UpdateHandlerService _updateHandlerService;
+        private readonly ILogger<UnitOfWork> logger;
+        private readonly UpdateHandlerService _updateHandlerService;
 
         public UpdateHandlerServiceTest()
         {
@@ -27,7 +27,10 @@ namespace HrukniNunitTest
                 .Options;
             _context = new ApplicationDbContext(options);
 
-            var unitOfWork = new UnitOfWork(_context);
+            var mock = new Mock<ILogger<UnitOfWork>>();
+            logger = mock.Object;
+
+            var unitOfWork = new UnitOfWork(_context, logger);
             var hoholService = new CommonService<Hohol>(_context);
             var chatService = new CommonService<HrukniHohlinaBot.DB.Models.Chat>(_context);
             var memberService = new CommonService<Member>(_context);

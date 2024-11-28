@@ -4,9 +4,9 @@ namespace HrukniHohlinaBot.DB.Models
     public class Hohol
     {
         public long MemberId { get; set; }
-        public Member Member { get; set; }
+        public Member? Member { get; set; }
         public long ChatId { get; set; }
-        public Chat Chat { get; set; }
+        public Chat? Chat { get; set; }
         public DateTime AssignmentDate { get; set; }
         public DateTime EndWritingPeriod { get; set; }
 

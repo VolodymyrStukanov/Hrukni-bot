@@ -1,5 +1,4 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 
 namespace HrukniHohlinaBot.Services.Interfaces
 {

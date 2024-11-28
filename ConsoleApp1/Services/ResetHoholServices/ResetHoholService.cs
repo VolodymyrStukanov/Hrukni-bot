@@ -1,5 +1,4 @@
 ﻿using HrukniHohlinaBot.DB.Models;
-using HrukniHohlinaBot.Services.BotServices;
 using HrukniHohlinaBot.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -7,43 +6,41 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
 {
     public class ResetHoholService : IResetHoholService
     {
-        object LockObject = new object();
+        readonly object LockObject = new object();
 
-        private readonly ILogger<TelegramBotService> _logger;
-        private IUnitOfWork _unitOfWork;
+        private readonly ILogger<ResetHoholService> logger;
+        private readonly IUnitOfWork unitOfWork;
 
-        private ICommonService<Chat> _chatService;
-        private ICommonService<Hohol> _hoholService;
-        private ICommonService<Member> _memberService;
-        public ResetHoholService(ILogger<TelegramBotService> logger, IUnitOfWork unitOfWork, 
+        private readonly ICommonService<Chat> chatService;
+        private readonly ICommonService<Hohol> hoholService;
+        private readonly ICommonService<Member> memberService;
+        public ResetHoholService(ILogger<ResetHoholService> logger, IUnitOfWork unitOfWork, 
             ICommonService<Chat> chatService, ICommonService<Hohol> hoholService, ICommonService<Member> memberService)
         {
-            _logger = logger;
-            _unitOfWork = unitOfWork;
-            _chatService = chatService;
-            _hoholService = hoholService;
-            _memberService = memberService;
+            this.logger = logger;
+            this.unitOfWork = unitOfWork;
+            this.chatService = chatService;
+            this.hoholService = hoholService;
+            this.memberService = memberService;
         }
 
         public Hohol? SelectNewHohol(long chatId)
         {
             lock (LockObject)
             {
-                var members = _memberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
-                Hohol newHohol = null;
-                if (members.Length > 0)
-                {
-                    Random rand = new Random();
-                    var i = rand.Next(0, members.Length);
+                var members = memberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
+                if(members.Length == 0) return null;
 
-                    newHohol = new Hohol()
-                    {
-                        ChatId = chatId,
-                        MemberId = members[i].Id,
-                        AssignmentDate = DateTime.Now.ToUniversalTime(),
-                        EndWritingPeriod = DateTime.Now.ToUniversalTime(),
-                    };
-                }
+                Random rand = new Random();
+                var i = rand.Next(0, members.Length);
+
+                Hohol newHohol = new Hohol()
+                {
+                    ChatId = chatId,
+                    MemberId = members[i].Id,
+                    AssignmentDate = DateTime.Now.ToUniversalTime(),
+                    EndWritingPeriod = DateTime.Now.ToUniversalTime(),
+                };
                 return newHohol;
             }
         }
@@ -52,30 +49,30 @@ namespace HrukniHohlinaBot.Services.ResetHoholServices
         {
             lock (LockObject)
             {
-                var chats = _chatService.GetAll().ToList();
-                foreach (var chat in chats)
+                var chats = chatService.GetAll().ToList();
+                foreach (var chatId in chats.Select(x => x.Id))
                 {
-                    using var transaction = _unitOfWork.BeginTransaction();
+                    using var transaction = unitOfWork.BeginTransaction();
                     try
                     {
-                        var currentHohol = _hoholService.Get(chat.Id);
+                        var currentHohol = hoholService.Get(chatId);
                         if (currentHohol != null)
                         {
-                            _hoholService.Remove(currentHohol.ChatId);
-                            _unitOfWork.SaveChanges();
+                            hoholService.Remove(currentHohol.ChatId);
+                            unitOfWork.SaveChanges();
                         }
 
-                        var newHohol = SelectNewHohol(chat.Id);
+                        var newHohol = SelectNewHohol(chatId);
                         if (newHohol != null)
                         {
-                            _hoholService.Add(newHohol);
-                            _unitOfWork.SaveChanges();
+                            hoholService.Add(newHohol);
+                            unitOfWork.SaveChanges();
                         }
                         transaction.Commit();
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"An error occurred in ResetHohols method: {ex.Message}");
+                        logger.LogError(ex, $"An error occurred in ResetHohols method");
                         transaction.Rollback();
                     }
                 }

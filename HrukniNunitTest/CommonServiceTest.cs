@@ -4,15 +4,16 @@ using HrukniHohlinaBot.Services.CommonServices;
 using HrukniHohlinaBot.Services.Interfaces;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
-using NUnit.Framework;
+using Microsoft.Extensions.Logging;
+using Moq;
 using NUnit.Framework.Legacy;
-using Telegram.Bot.Requests;
 
 namespace HrukniNunitTest
 {
     public class CommonServiceTest
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<UnitOfWork> logger;
 
         public CommonServiceTest()
         {
@@ -21,6 +22,9 @@ namespace HrukniNunitTest
                 .Options;
             _context = new ApplicationDbContext(options);
 
+            var mock = new Mock<ILogger<UnitOfWork>>();
+            logger = mock.Object;
+            
             SetTestData();
         }
 
@@ -89,7 +93,7 @@ namespace HrukniNunitTest
                 Id = 1l,
                 IsActive = false,
             };
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
 
             //Act
             var createdChat = chatService.Add(chat);
@@ -109,7 +113,7 @@ namespace HrukniNunitTest
                 Id = 1l,
                 IsActive = false,
             };
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
 
             //Act
             var del = () =>
@@ -155,7 +159,7 @@ namespace HrukniNunitTest
         public void UpdateExistingChat()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatService = new CommonService<Chat>(_context);
             var chatId = 1l;
             var isActive = true;
@@ -175,7 +179,7 @@ namespace HrukniNunitTest
         public void UpdateNotExistingChat()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatService = new CommonService<Chat>(_context);
             var chatId = 2l;
             var isActive = true;
@@ -196,7 +200,7 @@ namespace HrukniNunitTest
         public void DeleteExistingChatById()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatService = new CommonService<Chat>(_context);
             var chatId = 10l;
             chatService.Add(new Chat() { Id = 10l, IsActive = false });
@@ -214,7 +218,7 @@ namespace HrukniNunitTest
         public void DeleteNotExistingChatById()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatService = new CommonService<Chat>(_context);
             var chatId = 100l;
 
@@ -234,7 +238,7 @@ namespace HrukniNunitTest
         public void DeleteExistingChat()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatService = new CommonService<Chat>(_context);
             var chat = new Chat() { Id = 13l, IsActive = true };
 
@@ -250,7 +254,7 @@ namespace HrukniNunitTest
         public void DeleteNotExistingChat()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatService = new CommonService<Chat>(_context);
             var chat = new Chat() { Id = 130l, IsActive = true };
 
@@ -282,7 +286,7 @@ namespace HrukniNunitTest
                 IsOwner = true,
                 Username = "member10"
             };
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
 
             //Act
             var createdMember = memberService.Add(member);
@@ -304,7 +308,7 @@ namespace HrukniNunitTest
                 IsOwner = true,
                 Username = "member10"
             };
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
 
             //Act
             var del = () =>
@@ -370,7 +374,7 @@ namespace HrukniNunitTest
         public void UpdateExistingMember()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var memberService = new CommonService<Member>(_context);
             var chatId = 11l;
             var memberId = 1l;
@@ -398,7 +402,7 @@ namespace HrukniNunitTest
         public void UpdateNotExistingMember()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var memberService = new CommonService<Member>(_context);
             var chatId = 11l;
             var memberId = 100l;
@@ -427,7 +431,7 @@ namespace HrukniNunitTest
         public void DeleteExistingMemberByKey()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var memberService = new CommonService<Member>(_context);
             var chatId = 11l;
             var memberId = 1l;
@@ -444,7 +448,7 @@ namespace HrukniNunitTest
         public void DeleteNotExistingMemberByKey()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var memberService = new CommonService<Member>(_context);
             var chatId = 11l;
             var memberId = 1l;
@@ -465,7 +469,7 @@ namespace HrukniNunitTest
         public void DeleteExistingMember()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var memberService = new CommonService<Member>(_context);
             var chatId = 11l;
             var memberId = 20l;
@@ -484,7 +488,7 @@ namespace HrukniNunitTest
         public void DeleteNotExistingMember()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var memberService = new CommonService<Member>(_context);
             var chatId = 11l;
             var memberId = 1l;
@@ -530,7 +534,7 @@ namespace HrukniNunitTest
                 Chat = chatService.Get(chatId),
                 Member = memberService.Get(MemberId, chatId)
             };
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
 
             //Act
             var createdHohol = hoholService.Add(hohol);
@@ -546,7 +550,7 @@ namespace HrukniNunitTest
         {
             //Arrange
             var hoholService = new CommonService<Hohol>(_context);
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatId = 11l;
             var hohol = hoholService.Get(chatId);
             _context.Entry(hohol).State = EntityState.Detached;
@@ -570,7 +574,7 @@ namespace HrukniNunitTest
         {
             //Arrange
             var hoholService = new CommonService<Hohol>(_context);
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatId = 11l;
 
             //Act
@@ -585,7 +589,7 @@ namespace HrukniNunitTest
         {
             //Arrange
             var hoholService = new CommonService<Hohol>(_context);
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var chatId = 12l;
 
             //Act
@@ -616,7 +620,7 @@ namespace HrukniNunitTest
         public void UpdateExistingHohol()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var hoholService = new CommonService<Hohol>(_context);
             var chatId = 11l;
             var hohol = hoholService.Get(chatId);
@@ -643,7 +647,7 @@ namespace HrukniNunitTest
         public void UpdateNotExistingHohol()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var hoholService = new CommonService<Hohol>(_context);
             var chatId = 12l;
             var memberId = 12l;
@@ -672,7 +676,7 @@ namespace HrukniNunitTest
         public void DeleteExistingHoholByKey()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var hoholService = new CommonService<Hohol>(_context);
             var chatId = 11l;
 
@@ -688,7 +692,7 @@ namespace HrukniNunitTest
         public void DeleteNotExistingHoholByKey()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var hoholService = new CommonService<Hohol>(_context);
             var chatId = 12l;
 
@@ -708,7 +712,7 @@ namespace HrukniNunitTest
         public void DeleteExistingHohol()
         {
             //Arranges
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var hoholService = new CommonService<Hohol>(_context);
             var chatId = 20l;
             var hohol = hoholService.Get(chatId);
@@ -725,7 +729,7 @@ namespace HrukniNunitTest
         public void DeleteNotExistingHohol()
         {
             //Arrange
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(this._context, this.logger);
             var hoholService = new CommonService<Hohol>(_context);
             var chatId = 20l;
             var memberId = 20l;

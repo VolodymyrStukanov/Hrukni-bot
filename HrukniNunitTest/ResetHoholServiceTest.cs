@@ -6,12 +6,15 @@ using HrukniHohlinaBot.Services.CommonServices;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using NUnit.Framework.Legacy;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace HrukniNunitTest
 {
     public class ResetHoholServiceTest
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<UnitOfWork> logger;
 
         public ResetHoholServiceTest()
         {
@@ -20,6 +23,9 @@ namespace HrukniNunitTest
                 .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
             _context = new ApplicationDbContext(options);
+
+            var mock = new Mock<ILogger<UnitOfWork>>();
+            logger = mock.Object;
 
             SetTestData();
         }
@@ -65,7 +71,7 @@ namespace HrukniNunitTest
             var chatService = new CommonService<Chat>(_context);
             var memberService = new CommonService<Member>(_context);
             var hoholService = new CommonService<Hohol>(_context);
-            var unitOfWork = new UnitOfWork(_context);
+            var unitOfWork = new UnitOfWork(_context, logger);
             var resetHoholServie = new ResetHoholService(null, unitOfWork, chatService, hoholService, memberService);
 
             var chat1Id = 1l;

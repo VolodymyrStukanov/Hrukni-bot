@@ -1,34 +1,38 @@
 ﻿using HrukniHohlinaBot.DB;
 using HrukniHohlinaBot.Services.Interfaces;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 
 namespace HrukniHohlinaBot.Services.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
-        ApplicationDbContext _context;
-        public UnitOfWork(ApplicationDbContext context)
+        private readonly ApplicationDbContext context;
+        private readonly ILogger<UnitOfWork> logger;
+
+        public UnitOfWork(ApplicationDbContext context, ILogger<UnitOfWork> logger)
         {
-            _context = context;
+            this.context = context;
+            this.logger = logger;
         }
         public void SaveChanges()
         {
             try
             {
-                _context.SaveChanges();
+                context.SaveChanges();
                 DetachAll();
             }
             catch (Exception ex)
             {
                 RollBack();
-                throw ex;
+                logger.LogError(ex, "An error occurred in SaveChanges method in UnitOfWork");
             }
         }
 
         public void RollBack()
         {
-            foreach (var entry in _context.ChangeTracker.Entries())
+            foreach (var entry in context.ChangeTracker.Entries())
             {
                 if (entry.State == EntityState.Added)
                 {
@@ -48,19 +52,19 @@ namespace HrukniHohlinaBot.Services.UnitOfWork
 
         public void DetachAll()
         {
-            var changes = _context.ChangeTracker.Entries();
-            foreach (var change in changes)
+            var changes = context.ChangeTracker.Entries();
+            foreach (var change in changes.Select(x => x.Entity))
             {
-                if (change.Entity != null)
+                if (change != null)
                 {
-                    _context.Entry(change.Entity).State = EntityState.Detached;
+                    context.Entry(change).State = EntityState.Detached;
                 }
             }
         }
 
         public IDbContextTransaction BeginTransaction()
         {
-            return _context.Database.BeginTransaction();
+            return context.Database.BeginTransaction();
         }
     }
 }
