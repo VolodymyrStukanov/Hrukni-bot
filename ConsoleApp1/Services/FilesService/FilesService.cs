@@ -1,4 +1,4 @@
-﻿using HrukniHohlinaBot.Services.Interfaces;
+﻿using HrukniBot.Services.FilesService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

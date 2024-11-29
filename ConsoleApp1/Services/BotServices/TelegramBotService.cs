@@ -1,6 +1,6 @@
 ﻿using Telegram.Bot;
 using Microsoft.Extensions.Logging;
-using HrukniHohlinaBot.Services.Interfaces;
+using HrukniBot.Services.BotServices;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {

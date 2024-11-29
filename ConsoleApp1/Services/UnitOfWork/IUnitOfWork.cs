@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 
-namespace HrukniHohlinaBot.Services.Interfaces
+namespace HrukniBot.Services.UnitOfWork
 {
     public interface IUnitOfWork
     {

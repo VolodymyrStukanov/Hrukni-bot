@@ -1,6 +1,6 @@
 ﻿using Telegram.Bot.Types;
 
-namespace HrukniHohlinaBot.Services.Interfaces
+namespace HrukniBot.Services.BotServices
 {
     public interface IUpdateHandlerService
     {

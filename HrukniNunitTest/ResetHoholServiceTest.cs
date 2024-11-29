@@ -2,7 +2,7 @@
 using HrukniHohlinaBot.DB;
 using Microsoft.EntityFrameworkCore;
 using HrukniHohlinaBot.Services.HoholServices;
-using HrukniHohlinaBot.Services.CommonServices;
+using HrukniHohlinaBot.Services.CommonService;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using NUnit.Framework.Legacy;
 using Microsoft.EntityFrameworkCore.Diagnostics;

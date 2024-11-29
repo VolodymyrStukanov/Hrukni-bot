@@ -1,4 +1,4 @@
-﻿namespace HrukniHohlinaBot.Services.Interfaces
+﻿namespace HrukniBot.Services.BotServices
 {
     public interface ITelegramBotService
     {

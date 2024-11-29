@@ -1,5 +1,5 @@
-﻿using HrukniHohlinaBot.DB;
-using HrukniHohlinaBot.Services.Interfaces;
+﻿using HrukniBot.Services.UnitOfWork;
+using HrukniHohlinaBot.DB;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using EntityState = Microsoft.EntityFrameworkCore.EntityState;

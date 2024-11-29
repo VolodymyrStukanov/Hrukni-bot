@@ -1,9 +1,8 @@
 ﻿using HrukniHohlinaBot.DB;
 using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.Services.BotServices;
-using HrukniHohlinaBot.Services.CommonServices;
+using HrukniHohlinaBot.Services.CommonService;
 using HrukniHohlinaBot.Services.HoholServices;
-using HrukniHohlinaBot.Services.Interfaces;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +11,13 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Telegram.Bot;
 using HrukniHohlinaBot.Services.FilesService;
+using HrukniBot.Services.ChatServices;
+using HrukniBot.Services.MemberServices;
+using HrukniBot.Services.ResetBackgroundService;
 using HrukniBot.Services.HoholServices;
+using HrukniBot.Services.FilesService;
+using HrukniBot.Services.UnitOfWork;
+using HrukniBot.Services.BotServices;
 
 
 namespace HrukniHohlinaBot
@@ -55,11 +60,10 @@ namespace HrukniHohlinaBot
                     services.AddSingleton<IFilesService, FilesService>();
 
                     services.AddTransient<IUnitOfWork, UnitOfWork>();
-                    services.AddTransient<IHoholsService, HoholsService>();
-                    services.AddTransient<ICommonService<Chat>, CommonService<Chat>>();
-                    services.AddTransient<ICommonService<Member>, CommonService<Member>>();
-                    services.AddTransient<ICommonService<Hohol>, CommonService<Hohol>>();
                     services.AddTransient<IUpdateHandlerService, UpdateHandlerService>();
+                    services.AddTransient<IChatService, ChatService>();
+                    services.AddTransient<IMemberService, MemberService>();
+                    services.AddTransient<IHoholsService, HoholsService>();
 
                     services.AddDbContext<ApplicationDbContext>(options =>
                     {

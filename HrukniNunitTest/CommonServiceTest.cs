@@ -1,6 +1,6 @@
 using HrukniHohlinaBot.DB;
 using HrukniHohlinaBot.DB.Models;
-using HrukniHohlinaBot.Services.CommonServices;
+using HrukniHohlinaBot.Services.CommonService;
 using HrukniHohlinaBot.Services.Interfaces;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
@@ -362,7 +362,7 @@ namespace HrukniNunitTest
             var chatId = 11l;
 
             //Act
-            var member = memberService.GetIncludingChilds(memberId, chatId);
+            var member = memberService.GetIncludingChildren(memberId, chatId);
 
             //Assert
             ClassicAssert.NotNull(member);
@@ -607,7 +607,7 @@ namespace HrukniNunitTest
             var chatId = 11l;
 
             //Act
-            var hohol = hoholService.GetIncludingChilds(chatId);
+            var hohol = hoholService.GetIncludingChildren(chatId);
 
             //Assert
             ClassicAssert.NotNull(hohol);

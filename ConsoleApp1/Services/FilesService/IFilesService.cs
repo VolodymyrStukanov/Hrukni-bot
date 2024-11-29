@@ -1,7 +1,6 @@
-﻿
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 
-namespace HrukniHohlinaBot.Services.Interfaces
+namespace HrukniBot.Services.FilesService
 {
     public interface IFilesService
     {

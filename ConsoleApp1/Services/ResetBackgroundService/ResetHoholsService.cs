@@ -1,8 +1,8 @@
-﻿using HrukniHohlinaBot.Services.Interfaces;
+﻿using HrukniBot.Services.HoholServices;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace HrukniBot.Services.HoholServices
+namespace HrukniBot.Services.ResetBackgroundService
 {
     internal class ResetHoholsService : BackgroundService
     {

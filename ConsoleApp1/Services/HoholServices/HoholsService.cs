@@ -1,35 +1,77 @@
-﻿using HrukniHohlinaBot.DB.Models;
-using HrukniHohlinaBot.Services.Interfaces;
+﻿using HrukniBot.Services.ChatServices;
+using HrukniBot.Services.HoholServices;
+using HrukniBot.Services.MemberServices;
+using HrukniBot.Services.UnitOfWork;
+using HrukniHohlinaBot.DB;
+using HrukniHohlinaBot.DB.Models;
 using Microsoft.Extensions.Logging;
 
 namespace HrukniHohlinaBot.Services.HoholServices
 {
-    public class HoholsService : IHoholsService
+    internal class HoholsService : HoholServiceAbstraction, IHoholsService
     {
-        readonly object LockObject = new object();
+        private readonly object LockObject = new object();
 
         private readonly ILogger<HoholsService> logger;
         private readonly IUnitOfWork unitOfWork;
 
-        private readonly ICommonService<Chat> chatService;
-        private readonly ICommonService<Hohol> hoholService;
-        private readonly ICommonService<Member> memberService;
+        private readonly IChatService chatService;
+        private readonly IMemberService memberService;
 
-        public HoholsService(ILogger<HoholsService> logger, IUnitOfWork unitOfWork, 
-            ICommonService<Chat> chatService, ICommonService<Hohol> hoholService, ICommonService<Member> memberService)
+        public HoholsService(
+            ApplicationDbContext context,
+            ILogger<HoholsService> logger, 
+            IUnitOfWork unitOfWork,
+            IChatService chatService,
+            IMemberService memberService)
+            : base(context)
         {
             this.logger = logger;
             this.unitOfWork = unitOfWork;
             this.chatService = chatService;
-            this.hoholService = hoholService;
             this.memberService = memberService;
+        }
+
+        public Hohol AddHohol(Hohol model)
+        {
+            return this.Add(model);
+        }
+
+        public void UpdateHohol(Hohol model)
+        {
+            this.Update(model);
+        }
+
+        public Hohol? GetHohol(long ChatId)
+        {
+            return this.Get(ChatId);
+        }
+
+        public Hohol? GetHoholIncludingChildren(long ChatId)
+        {
+            return this.GetIncludingChildren(ChatId);
+        }
+
+        public IQueryable<Hohol> GetAllHohols()
+        {
+            return this.GetAll();
+        }
+
+        public void RemoveHohol(long ChatId)
+        {
+            this.Remove(ChatId);
+        }
+
+        public void RemoveHohol(Hohol entity)
+        {
+            this.Remove(entity);
         }
 
         public Hohol? SelectNewHohol(long chatId)
         {
             lock (LockObject)
             {
-                var members = memberService.GetAll().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
+                var members = memberService.GetAllMembers().Where(x => !x.IsOwner && x.ChatId == chatId).ToArray();
                 if(members.Length == 0) return null;
 
                 Random rand = new Random();
@@ -50,23 +92,23 @@ namespace HrukniHohlinaBot.Services.HoholServices
         {
             lock (LockObject)
             {
-                var chats = chatService.GetAll().ToList();
+                var chats = chatService.GetAllChats().ToList();
                 foreach (var chatId in chats.Select(x => x.Id))
                 {
                     using var transaction = unitOfWork.BeginTransaction();
                     try
                     {
-                        var currentHohol = hoholService.Get(chatId);
+                        var currentHohol = GetHohol(chatId);
                         if (currentHohol != null)
                         {
-                            hoholService.Remove(currentHohol.ChatId);
+                            this.RemoveHohol(currentHohol.ChatId);
                             unitOfWork.SaveChanges();
                         }
 
                         var newHohol = SelectNewHohol(chatId);
                         if (newHohol != null)
                         {
-                            hoholService.Add(newHohol);
+                            AddHohol(newHohol);
                             unitOfWork.SaveChanges();
                         }
                         transaction.Commit();

@@ -1,7 +1,7 @@
 ﻿using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.DB;
 using Microsoft.EntityFrameworkCore;
-using HrukniHohlinaBot.Services.CommonServices;
+using HrukniHohlinaBot.Services.CommonService;
 using HrukniHohlinaBot.Services.HoholServices;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Telegram.Bot.Types;
