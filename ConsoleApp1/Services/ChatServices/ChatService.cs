@@ -4,7 +4,7 @@ using HrukniHohlinaBot.Services.CommonService;
 
 namespace HrukniBot.Services.ChatServices
 {
-    internal class ChatService : CommonService<Chat, long>, IChatService
+    public class ChatService : CommonService<Chat, long>, IChatService
     {
         public ChatService(ApplicationDbContext context) 
             : base(context)

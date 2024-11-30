@@ -42,8 +42,14 @@ namespace HrukniHohlinaBot.Services.CommonService
 
         protected virtual T? Get(TKey key)
         {
-            var entity = dbSet.Find(key);
-            return entity;
+            if (key is object[] compositeKey)
+            {
+                return dbSet.Find(compositeKey);
+            }
+            else
+            {
+                return dbSet.Find(key);
+            }
         }
 
         protected virtual void Remove(TKey key)

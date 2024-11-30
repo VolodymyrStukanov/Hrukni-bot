@@ -1,7 +1,7 @@
 ﻿
 namespace HrukniBot.Services.MemberServices
 {
-    internal class MemberKey
+    public class MemberKey
     {
         public long Id { get; set; }
         public long ChatId { get; set; }

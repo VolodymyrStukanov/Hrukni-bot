@@ -2,7 +2,7 @@
 
 namespace HrukniBot.Services.ChatServices
 {
-    internal interface IChatService
+    public interface IChatService
     {
         public Chat AddChat(Chat model);
 

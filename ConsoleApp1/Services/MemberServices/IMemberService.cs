@@ -1,10 +1,8 @@
-﻿
-using HrukniHohlinaBot.DB.Models;
-using System.Runtime.CompilerServices;
+﻿using HrukniHohlinaBot.DB.Models;
 
 namespace HrukniBot.Services.MemberServices
 {
-    internal interface IMemberService
+    public interface IMemberService
     {
         public Member AddMember(Member model);
 

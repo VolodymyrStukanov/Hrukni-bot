@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HrukniHohlinaBot.Services.HoholServices
 {
-    internal class HoholsService : HoholServiceAbstraction, IHoholsService
+    public class HoholsService : HoholServiceAbstraction, IHoholsService
     {
         private readonly object LockObject = new object();
 

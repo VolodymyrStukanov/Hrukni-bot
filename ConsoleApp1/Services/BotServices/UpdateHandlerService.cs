@@ -14,7 +14,7 @@ using HrukniBot.Services.ChatServices;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {
-    internal class UpdateHandlerService : IUpdateHandlerService
+    public class UpdateHandlerService : IUpdateHandlerService
     {
         private readonly ILogger<UpdateHandlerService> logger;
         private readonly IUnitOfWork unitOfWork;
@@ -29,7 +29,7 @@ namespace HrukniHohlinaBot.Services.BotServices
         private readonly string[] allowationMessages;
 
         public UpdateHandlerService(ILogger<UpdateHandlerService> logger, ITelegramBotClient botClient,
-            IHoholsService resetHoholService, IUnitOfWork unitOfWork, IConfiguration configuration, IFilesService filesService,
+            IUnitOfWork unitOfWork, IConfiguration configuration, IFilesService filesService,
             IMemberService memberService, IChatService chatService, IHoholsService hoholService)
         {
             this.botClient = botClient;

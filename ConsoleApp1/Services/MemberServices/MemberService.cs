@@ -3,7 +3,7 @@ using HrukniHohlinaBot.DB.Models;
 
 namespace HrukniBot.Services.MemberServices
 {
-    internal class MemberService : MemberServiceAbstraction, IMemberService
+    public class MemberService : MemberServiceAbstraction, IMemberService
     {
         public MemberService(ApplicationDbContext context) 
             : base(context)

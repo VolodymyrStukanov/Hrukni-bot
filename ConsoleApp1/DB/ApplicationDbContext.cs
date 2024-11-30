@@ -36,6 +36,11 @@ namespace HrukniHohlinaBot.DB
                 .HasForeignKey(x => x.ChatId)
                 .OnDelete(deleteBehavior: DeleteBehavior.Cascade);
             });
+
+            modelBuilder.Entity<Chat>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+            });
         }
 
         public DbSet<Chat> Chats { get; set; }

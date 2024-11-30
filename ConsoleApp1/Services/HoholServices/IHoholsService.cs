@@ -2,7 +2,7 @@
 
 namespace HrukniBot.Services.HoholServices
 {
-    internal interface IHoholsService
+    public interface IHoholsService
     {
         public void ResetHohols();
 

@@ -2,11 +2,11 @@
 using HrukniHohlinaBot.DB;
 using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.Services.CommonService;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace HrukniBot.Services.HoholServices
 {
-    internal class HoholServiceAbstraction : CommonService<Hohol, long>
+    public class HoholServiceAbstraction : CommonService<Hohol, long>
     {
         public HoholServiceAbstraction(ApplicationDbContext context) : base(context)
         {
