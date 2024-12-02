@@ -1,7 +1,5 @@
 ﻿using HrukniHohlinaBot.DB;
-using HrukniHohlinaBot.DB.Models;
 using HrukniHohlinaBot.Services.BotServices;
-using HrukniHohlinaBot.Services.CommonService;
 using HrukniHohlinaBot.Services.HoholServices;
 using HrukniHohlinaBot.Services.UnitOfWork;
 using Microsoft.EntityFrameworkCore;

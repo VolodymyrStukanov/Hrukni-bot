@@ -34,6 +34,11 @@ namespace HrukniHohlinaBot.Services.BotServices
                         offset = update.Id + 1;
                     }
                 }
+                catch(Telegram.Bot.Exceptions.RequestException ex)
+                {
+                    logger.LogError(ex, $"Problem with receiving updates. Possible problems with the internet connection");
+                    Thread.Sleep(5000);
+                }
                 catch (Exception ex)
                 {
                     logger.LogError(ex, $"An error occurred in StartBotAsync method");
