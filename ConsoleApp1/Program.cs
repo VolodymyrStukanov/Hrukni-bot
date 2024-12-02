@@ -18,6 +18,7 @@ using HrukniBot.Services.HoholServices;
 using HrukniBot.Services.FilesService;
 using HrukniBot.Services.UnitOfWork;
 using HrukniBot.Services.BotServices;
+using Serilog.Events;
 
 
 namespace HrukniHohlinaBot
@@ -34,8 +35,11 @@ namespace HrukniHohlinaBot
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(config)
                 .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.File("logs/error/log-.txt", rollingInterval: RollingInterval.Day/*, restrictedToMinimumLevel: LogEventLevel.Warning*/)
+                .WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Warning)
+                .WriteTo.File(
+                    "logs/error/log-.txt", 
+                    rollingInterval: RollingInterval.Day, 
+                    restrictedToMinimumLevel: LogEventLevel.Warning)
             .CreateLogger();
 
             using var cts = new CancellationTokenSource();
