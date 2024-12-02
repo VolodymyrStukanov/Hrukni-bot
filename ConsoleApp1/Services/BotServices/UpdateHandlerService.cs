@@ -295,7 +295,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                     var hohol = hoholService.GetHoholIncludingChildren(message.Chat.Id);
                     if(hohol != null)
                     {
-                        if (message.Text!.ToLower().Contains("хрю"))
+                        if (message.Text!.ToLower().Contains("хрю") && !hohol.IsAllowedToWrite())
                         {
                             if (hohol.Member!.Id == message.From!.Id)
                             {
