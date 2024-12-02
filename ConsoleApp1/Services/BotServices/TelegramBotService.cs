@@ -1,10 +1,11 @@
 ﻿using Telegram.Bot;
 using Microsoft.Extensions.Logging;
 using HrukniBot.Services.BotServices;
+using Microsoft.Extensions.Hosting;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {
-    public class TelegramBotService : ITelegramBotService
+    public class TelegramBotService : BackgroundService
     {
         private readonly ITelegramBotClient botClient;
         private readonly ILogger<TelegramBotService> logger;
@@ -19,20 +20,19 @@ namespace HrukniHohlinaBot.Services.BotServices
             this.updateHandlerService = updateHandlerService;
         }
 
-        public async Task StartBotAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             int offset = 0;
-            while (!cancellationToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    var updates = await botClient.GetUpdatesAsync(offset, timeout: 100, cancellationToken: cancellationToken);
+                    var updates = await botClient.GetUpdatesAsync(offset, timeout: 100, cancellationToken: stoppingToken);
                     foreach (var update in updates)
                     {
                         await updateHandlerService.HandleUpdate(update);
                         offset = update.Id + 1;
                     }
-                    Thread.Sleep(1000);
                 }
                 catch (Exception ex)
                 {
