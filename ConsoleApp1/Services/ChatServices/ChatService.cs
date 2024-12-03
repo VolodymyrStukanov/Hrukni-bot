@@ -21,9 +21,9 @@ namespace HrukniBot.Services.ChatServices
             this.Update(model);
         }
 
-        public Chat? GetChat(long id)
+        public Chat? GetChat(long key)
         {
-            return this.Get(id);
+            return this.Get(key);
         }
 
         public IQueryable<Chat> GetAllChats()

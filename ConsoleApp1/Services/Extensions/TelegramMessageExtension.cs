@@ -1,5 +1,3 @@
-
-using System.CodeDom;
 using Telegram.Bot.Types;
 
 namespace ConsoleApp1.Services.Extensions

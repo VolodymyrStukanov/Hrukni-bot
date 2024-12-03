@@ -42,9 +42,9 @@ namespace HrukniHohlinaBot.Services.HoholServices
             this.Update(model);
         }
 
-        public Hohol? GetHohol(long ChatId)
+        public Hohol? GetHohol(long key)
         {
-            return this.Get(ChatId);
+            return this.Get(key);
         }
 
         public Hohol? GetHoholIncludingChildren(long ChatId)
