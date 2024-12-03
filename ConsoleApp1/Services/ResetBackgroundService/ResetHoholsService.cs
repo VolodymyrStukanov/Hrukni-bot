@@ -28,7 +28,7 @@ namespace HrukniBot.Services.ResetBackgroundService
         {
             try
             {
-                while (stoppingToken.IsCancellationRequested)
+                while (!stoppingToken.IsCancellationRequested)
                 {
                     var time = DateTime.Now;
 
