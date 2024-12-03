@@ -11,6 +11,7 @@ using HrukniBot.Services.UnitOfWork;
 using HrukniBot.Services.BotServices;
 using HrukniBot.Services.MemberServices;
 using HrukniBot.Services.ChatServices;
+using ConsoleApp1.Services.Extensions;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {
@@ -290,56 +291,18 @@ namespace HrukniHohlinaBot.Services.BotServices
         {
             try
             {
-                if (message.Date.ToLocalTime().CompareTo(DateTime.Now.AddMinutes(-2)) > 0)
+                if (message.IsRecentMessage())
                 {
                     var hohol = hoholService.GetHoholIncludingChildren(message.Chat.Id);
-                    if(hohol != null)
+                    if(hohol != null && hohol.Member!.Id == message.From!.Id && !hohol.IsAllowedToWrite())
                     {
-                        if (message.Text!.ToLower().Contains("хрю") && !hohol.IsAllowedToWrite())
+                        if (message.Text!.Contains("хрю", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            if (hohol.Member!.Id == message.From!.Id)
-                            {
-                                Random random = new Random();
-                                int time = random.Next(2, 10);
-
-                                hohol.EndWritingPeriod = DateTime.Now.ToUniversalTime().AddMinutes(time);
-                                unitOfWork.SaveChanges();
-
-#if !Test
-                                int i = random.Next(0, allowationMessages.Length);
-
-                                var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
-
-                                await botClient.SendMessage(
-                                chatId: message.Chat.Id,
-                                    text: string.Format(allowationMessages[i], newDate),
-                                    replyParameters: message.MessageId
-                                );
-#endif
-                            }
+                            await AllowWriting(hohol, message.MessageId);
                         }
                         else
                         {
-                            if (hohol.Member!.Id != message.From!.Id) return;
-
-                            if (!hohol.IsAllowedToWrite())
-                            {
-
-#if !Test
-                                await botClient.DeleteMessage(
-                                    chatId: hohol.ChatId,
-                                    messageId: message.MessageId
-                                );
-
-                                Random rand = new Random();
-                                int i = rand.Next(0, claimMessages.Length);
-
-                                await botClient.SendMessage(
-                                    chatId: hohol.ChatId,
-                                    text: $"@{hohol.Member.Username} {claimMessages[i]}"
-                                );
-#endif
-                            }
+                            await MessageDeletion(hohol, message.MessageId);
                         }
                     }
                 }
@@ -348,6 +311,46 @@ namespace HrukniHohlinaBot.Services.BotServices
             {
                 logger.LogError(ex, $"An error occurred in MessageUpdate method");
             }            
+        }
+
+        private async Task AllowWriting(Hohol hohol, int messageId)
+        {
+
+            Random random = new();
+            int time = random.Next(2, 10);
+
+            hohol.EndWritingPeriod = DateTime.Now.ToUniversalTime().AddMinutes(time);
+            unitOfWork.SaveChanges();
+
+#if !Test
+            int i = random.Next(0, allowationMessages.Length);
+
+            var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
+
+            await botClient.SendMessage(
+            chatId: hohol.ChatId,
+                text: string.Format(allowationMessages[i], newDate),
+                replyParameters: messageId
+            );
+#endif
+        }
+
+        private async Task MessageDeletion(Hohol hohol, int messageId)
+        {
+#if !Test
+            await botClient.DeleteMessage(
+                chatId: hohol.ChatId,
+                messageId: messageId
+            );
+
+            Random rand = new Random();
+            int i = rand.Next(0, claimMessages.Length);
+
+            await botClient.SendMessage(
+                chatId: hohol.ChatId,
+                text: $"@{hohol.Member!.Username} {claimMessages[i]}"
+            );
+#endif
         }
     }
 }
