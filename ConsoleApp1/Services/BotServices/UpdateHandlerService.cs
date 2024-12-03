@@ -118,7 +118,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             if (update.Type == UpdateType.Message && update.Message != null && update.Message.From != null)
             {
 #if !Test
-                ChatMember? memberInfo = await botClient.GetChatMemberAsync(update.Message.Chat.Id, update.Message.From.Id);
+                ChatMember? memberInfo = await botClient.GetChatMember(update.Message.Chat.Id, update.Message.From.Id);
                 member = new Member()
                 {
                     Username = memberInfo.User.Username,
@@ -140,7 +140,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             else if (update.Type == UpdateType.MyChatMember && update.MyChatMember != null)
             {
 #if !Test
-                ChatMember? memberInfo = await botClient.GetChatMemberAsync(update.MyChatMember.Chat.Id, update.MyChatMember.From.Id);
+                ChatMember? memberInfo = await botClient.GetChatMember(update.MyChatMember.Chat.Id, update.MyChatMember.From.Id);
                 member = new Member()
                 {
                     Username = memberInfo.User.Username,
@@ -174,7 +174,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 var chat = chatService.GetChat(member.ChatId);
                 if (chat == null)
                 {
-                    logger.LogError($"An error occurred in HandleCommand method. \nThe chat with id {member.ChatId} was not found");
+                    logger.LogError("An error occurred in HandleCommand method. \nThe chat with id {0} was not found", member.ChatId);
                     return;
                 }
 
@@ -184,8 +184,8 @@ namespace HrukniHohlinaBot.Services.BotServices
                     unitOfWork.SaveChanges();
 
 #if !Test
-                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Хохлы...");
-                    await botClient.SendTextMessageAsync(message.Chat.Id, $"Готовтесь хрюкать");
+                    await botClient.SendMessage(message.Chat.Id, $"Хохлы...");
+                    await botClient.SendMessage(message.Chat.Id, $"Готовтесь хрюкать");
 #endif
                 }
                 else if (message.Text == "/stop_hrukni" && member.IsOwner)
@@ -227,7 +227,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                         if (newUser.IsBot) continue;
 
 #if !Test
-                        ChatMember? memberInfo = await botClient.GetChatMemberAsync(message.Chat.Id, newUser.Id);
+                        ChatMember? memberInfo = await botClient.GetChatMember(message.Chat.Id, newUser.Id);
                         Member newMember = new Member()
                         {
                             Username = newUser.Username,
@@ -310,7 +310,7 @@ namespace HrukniHohlinaBot.Services.BotServices
 
                                 var newDate = hohol.EndWritingPeriod.ToLocalTime().ToString("HH:mm:ss");
 
-                                await botClient.SendTextMessageAsync(
+                                await botClient.SendMessage(
                                 chatId: message.Chat.Id,
                                     text: string.Format(allowationMessages[i], newDate),
                                     replyParameters: message.MessageId
@@ -326,7 +326,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                             {
 
 #if !Test
-                                await botClient.DeleteMessageAsync(
+                                await botClient.DeleteMessage(
                                     chatId: hohol.ChatId,
                                     messageId: message.MessageId
                                 );
@@ -334,7 +334,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                                 Random rand = new Random();
                                 int i = rand.Next(0, claimMessages.Length);
 
-                                await botClient.SendTextMessageAsync(
+                                await botClient.SendMessage(
                                     chatId: hohol.ChatId,
                                     text: $"@{hohol.Member.Username} {claimMessages[i]}"
                                 );

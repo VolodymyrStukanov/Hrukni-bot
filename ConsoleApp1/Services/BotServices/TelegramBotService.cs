@@ -27,7 +27,7 @@ namespace HrukniHohlinaBot.Services.BotServices
             {
                 try
                 {
-                    var updates = await botClient.GetUpdatesAsync(offset, timeout: 100, cancellationToken: stoppingToken);
+                    var updates = await botClient.GetUpdates(offset, timeout: 100, cancellationToken: stoppingToken);
                     foreach (var update in updates)
                     {
                         await updateHandlerService.HandleUpdate(update);
