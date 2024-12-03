@@ -57,9 +57,9 @@ namespace HrukniHohlinaBot.Services.HoholServices
             return this.GetAll();
         }
 
-        public void RemoveHohol(long ChatId)
+        public void RemoveHohol(long key)
         {
-            this.Remove(ChatId);
+            this.Remove(key);
         }
 
         public void RemoveHohol(Hohol entity)
