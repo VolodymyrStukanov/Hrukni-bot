@@ -1,6 +1,6 @@
 using Telegram.Bot.Types;
 
-namespace ConsoleApp1.Services.Extensions
+namespace HrukniHohlinaBot.Extentions
 {
     public static class TelegramMessageExtension
     {

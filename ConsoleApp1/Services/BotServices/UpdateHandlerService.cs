@@ -11,7 +11,7 @@ using HrukniBot.Services.UnitOfWork;
 using HrukniBot.Services.BotServices;
 using HrukniBot.Services.MemberServices;
 using HrukniBot.Services.ChatServices;
-using ConsoleApp1.Services.Extensions;
+using HrukniHohlinaBot.Extentions;
 
 namespace HrukniHohlinaBot.Services.BotServices
 {
