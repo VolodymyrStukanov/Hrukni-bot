@@ -149,7 +149,6 @@ namespace HrukniNunitTest
             await updateHandlerService.HandleUpdate(update1);
 
             //Assert
-            var hoh = context.Hohols?.Single();
             Assert.That(await context.Hohols?.ToArrayAsync()!, Has.Length.EqualTo(1));
         }
 
@@ -187,7 +186,6 @@ namespace HrukniNunitTest
             await updateHandlerService.HandleUpdate(update1);
 
             //Assert
-            var hoh = context.Hohols?.Single();
             Assert.That((await context.Hohols?.SingleAsync()!).IsAllowedToWrite(), Is.EqualTo(true));
         }
 

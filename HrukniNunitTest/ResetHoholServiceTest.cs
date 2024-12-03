@@ -29,34 +29,31 @@ namespace HrukniNunitTest
         {
             var context = new ApplicationDbContext(dbContextOptions);
 
-            Chat chat = null;
-            chat = new Chat() { Id = 1l, IsActive = false };
+            Chat chat = new Chat() { Id = 1L, IsActive = false };
             context.Chats.Add(chat);
-            chat = new Chat() { Id = 2l, IsActive = false };
+            chat = new Chat() { Id = 2L, IsActive = false };
             context.Chats.Add(chat);
             context.SaveChanges();
 
-            Member member = null;
-            member = new Member() { ChatId = 1l, Id = 1l, IsOwner = false, Username = "member1" };
+            Member member = new Member() { ChatId = 1L, Id = 1L, IsOwner = false, Username = "member1" };
             context.Members.Add(member);
-            member = new Member() { ChatId = 1l, Id = 2l, IsOwner = true, Username = "member2" };
+            member = new Member() { ChatId = 1L, Id = 2L, IsOwner = true, Username = "member2" };
             context.Members.Add(member);
-            member = new Member() { ChatId = 1l, Id = 3l, IsOwner = false, Username = "member3" };
+            member = new Member() { ChatId = 1L, Id = 3L, IsOwner = false, Username = "member3" };
             context.Members.Add(member);
-            member = new Member() { ChatId = 1l, Id = 4l, IsOwner = false, Username = "member4" };
+            member = new Member() { ChatId = 1L, Id = 4L, IsOwner = false, Username = "member4" };
             context.Members.Add(member);
-            member = new Member() { ChatId = 1l, Id = 5l, IsOwner = false, Username = "member5" };
+            member = new Member() { ChatId = 1L, Id = 5L, IsOwner = false, Username = "member5" };
             context.Members.Add(member);
-            member = new Member() { ChatId = 2l, Id = 2l, IsOwner = false, Username = "member2" };
+            member = new Member() { ChatId = 2L, Id = 2L, IsOwner = false, Username = "member2" };
             context.Members.Add(member);
-            member = new Member() { ChatId = 2l, Id = 3l, IsOwner = false, Username = "member3" };
+            member = new Member() { ChatId = 2L, Id = 3L, IsOwner = false, Username = "member3" };
             context.Members.Add(member);
-            member = new Member() { ChatId = 2l, Id = 6l, IsOwner = false, Username = "member6" };
+            member = new Member() { ChatId = 2L, Id = 6L, IsOwner = false, Username = "member6" };
             context.Members.Add(member);
             context.SaveChanges();
 
-            Hohol hohol = null;
-            hohol = new Hohol() { ChatId = 1l, MemberId = 2l, AssignmentDate = DateTime.Now.AddHours(-12), EndWritingPeriod = DateTime.Now.AddMinutes(10) };
+            Hohol hohol = new Hohol() { ChatId = 1L, MemberId = 2L, AssignmentDate = DateTime.Now.AddHours(-12), EndWritingPeriod = DateTime.Now.AddMinutes(10) };
             context.Hohols.Add(hohol);
             context.SaveChanges();
         }
@@ -75,8 +72,8 @@ namespace HrukniNunitTest
             var unitOfWork = new UnitOfWork(context, loggerUoW);
             var hoholService = new HoholsService(context, loggerHS, unitOfWork, chatService, memberService);
 
-            var chat1Id = 1l;
-            var chat2Id = 2l;
+            var chat1Id = 1L;
+            var chat2Id = 2L;
 
             //Act
             hoholService.ResetHohols();
