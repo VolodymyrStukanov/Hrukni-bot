@@ -24,7 +24,7 @@ namespace HrukniBot.Services.ResetBackgroundService
             { "hour", 3600000 }
         };
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
@@ -36,22 +36,20 @@ namespace HrukniBot.Services.ResetBackgroundService
                         && time.Minute == resetHoholsTime.Minute)
                     {
                         hoholService.ResetHohols();
-                        Thread.Sleep(waitingTime["hour"]);
+                        await Task.Delay(waitingTime["hour"], stoppingToken);
                     }
 
                     if (time.Hour != resetHoholsTime.Hour - 1)
-                        Thread.Sleep(waitingTime["hour"]);
+                        await Task.Delay(waitingTime["hour"], stoppingToken);
                     else if (time.Minute != (resetHoholsTime.Minute == 0 ? 60 - 1 : resetHoholsTime.Minute - 1))
-                        Thread.Sleep(waitingTime["minute"]);
+                        await Task.Delay(waitingTime["minute"], stoppingToken);
                     else
-                        Thread.Sleep(waitingTime["tenSeconds"]);
+                        await Task.Delay(waitingTime["tenSeconds"], stoppingToken);
                 }
-                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 logger.LogError(exception: ex, $"An error occurred in SetNewHohols method");
-                return Task.CompletedTask;
             }
         }
     }

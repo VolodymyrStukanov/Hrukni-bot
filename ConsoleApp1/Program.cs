@@ -71,8 +71,8 @@ namespace HrukniHohlinaBot
                         options.UseNpgsql(registeredConfig.GetConnectionString("DefaultConnection"));
                     });
 
-                    services.AddHostedService<ResetHoholsService>();
                     services.AddHostedService<TelegramBotService>();
+                    services.AddHostedService<ResetHoholsService>();
                 })
                 .UseSerilog()
                 .Build();

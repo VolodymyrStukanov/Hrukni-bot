@@ -37,7 +37,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                 catch(Telegram.Bot.Exceptions.RequestException ex)
                 {
                     logger.LogError(ex, $"Problem with receiving updates. Possible problems with the internet connection");
-                    Thread.Sleep(5000);
+                    await Task.Delay(5000, stoppingToken);
                 }
                 catch (Exception ex)
                 {
