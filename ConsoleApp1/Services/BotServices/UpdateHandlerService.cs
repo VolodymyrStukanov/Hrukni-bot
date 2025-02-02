@@ -179,7 +179,7 @@ namespace HrukniHohlinaBot.Services.BotServices
                     return;
                 }
 
-                if (message.Text == "/start_hrukni" && member.IsOwner)
+                if ((member.IsOwner || member.Username == "GroupAnonymousBot") && message.Text == "/start_hrukni")
                 {
                     chat.IsActive = true;
                     unitOfWork.SaveChanges();
@@ -189,12 +189,12 @@ namespace HrukniHohlinaBot.Services.BotServices
                     await botClient.SendMessage(message.Chat.Id, $"Готовтесь хрюкать");
 #endif
                 }
-                else if (message.Text == "/stop_hrukni" && member.IsOwner)
+                else if ((member.IsOwner || member.Username == "GroupAnonymousBot") && message.Text == "/stop_hrukni")
                 {
                     chat.IsActive = false;
                     unitOfWork.SaveChanges();
                 }
-                else if (message.Text == "/reset_hohols" && member.IsOwner)
+                else if ((member.IsOwner || member.Username == "GroupAnonymousBot") && message.Text == "/reset_hohols")
                 {
                     var currentHohol = hoholService.GetHohol(chat.Id);
                     if (currentHohol != null)
